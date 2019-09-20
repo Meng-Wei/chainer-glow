@@ -154,7 +154,7 @@ def main():
             ez = []
             nll = 0
             for (zi, mean, ln_var) in factorized_z_distribution:
-                pritn(mean, ln_var)
+                print(mean, ln_var)
                 nll += cf.gaussian_nll(zi, mean, ln_var)
                 factor_z.append(zi.data)
                 ez.append(zi.data.reshape(-1,))
