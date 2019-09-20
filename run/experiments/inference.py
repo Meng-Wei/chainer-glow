@@ -116,11 +116,8 @@ def main():
 
             x_img = make_uint8(x[0], num_bins_x)
             ori_x.append(x_img) # 64x64x3
-            print('x_img shape: ', x_img.shape)
-
             factorized_z_distribution, fw_ldt = encoder.forward_step(x)
             fw_logdet.append(fw_ldt.data)
-            print('fw_ldt:', fw_ldt.data)
 
             factor_z = []
             ez = []
@@ -128,7 +125,8 @@ def main():
             for (zi, mean, ln_var) in factorized_z_distribution:
                 nll += cf.gaussian_nll(zi, mean, ln_var)
                 factor_z.append(zi.data)
-                ez += zi.data
+                print(zi.data.shape)
+                # ez += zi.data
             print('len ez: ', len(ez))
             enc_z.append(ez)
             print('nll', nll)
