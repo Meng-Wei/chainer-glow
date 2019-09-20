@@ -127,7 +127,7 @@ def main():
                 factor_z.append(zi.data)
                 ez.append(zi.data.reshape(1, -1))
             
-            ez = np.concatenate(ez, axis=0)
+            ez = np.concatenate(ez)
             print('ez shape:', ez.shape)
             enc_z.append(ez)
             print('nll: ', nll.data)
