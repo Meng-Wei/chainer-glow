@@ -101,7 +101,7 @@ def main():
             print('x.shape', x.shape)
             x += xp.random.uniform(0, 1.0 / num_bins_x, size=x.shape)
             factorized_z_distribution, _ = encoder.forward_step(x)
-            print('fz.shape', factorized_z_distribution[0].shape)
+            print('fz.shape', factorized_z_distribution[0][0].shape)
             print('_ shape', _.shape)
             print('_', _)
             print('\n')
