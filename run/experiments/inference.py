@@ -122,20 +122,19 @@ def main():
             factor_z = []
             ez = []
             nll = 0
-            i = 0
             for (zi, mean, ln_var) in factorized_z_distribution:
                 nll += cf.gaussian_nll(zi, mean, ln_var)
                 factor_z.append(zi.data)
-                ez.append(zi.data.reshape(-1, 1))
-                print(ez[i].shape)
-                i += 1
+                ez.append(zi.data.reshape(-1,))
             
             ez = np.concatenate(ez)
             print('ez shape:', ez.shape)
             enc_z.append(ez)
             print('nll: ', nll.data)
             logpZ.append(nll)
-            print('all: ', cf.gaussian_nll(ez, np.mean(ez), np.var(ez)))
+            print('all mean:', np.mean(ez))
+            print('all var: ', np.var(ez))
+            print('all: ', cf.gaussian_nll(ez, np.mean(ez), np.var(ez)).data)
 
             rx, bk_ldt = decoder.reverse_step(factor_z)
             rx_img = make_uint8(rx.data[0], num_bins_x)
@@ -145,17 +144,33 @@ def main():
 
 
 
-            # x += xp.random.uniform(0, 1.0 / num_bins_x, size=x.shape)
-            # x_img = make_uint8(x[0], num_bins_x)
-            # pro_ori_x.append(x_img) # 64x64x3
+            x += xp.random.uniform(0, 1.0 / num_bins_x, size=x.shape)
+            x_img = make_uint8(x[0], num_bins_x)
+            pro_ori_x.append(x_img) # 64x64x3
+            factorized_z_distribution, fw_ldt = encoder.forward_step(x)
+            pro_fw_logdet.append(fw_ldt.data)
 
+            factor_z = []
+            ez = []
+            nll = 0
+            for (zi, mean, ln_var) in factorized_z_distribution:
+                nll += cf.gaussian_nll(zi, mean, ln_var)
+                factor_z.append(zi.data)
+                ez.append(zi.data.reshape(-1,))
+            
+            ez = np.concatenate(ez)
+            print('ez shape:', ez.shape)
+            pro_enc_z.append(ez)
+            print('nll: ', nll.data)
+            pro_logpZ.append(nll)
+            print('all mean:', np.mean(ez))
+            print('all var: ', np.var(ez))
+            print('all: ', cf.gaussian_nll(ez, np.mean(ez), np.var(ez)).data)
 
-            # factorized_z_distribution, _ = encoder.forward_step(x)
-
-
-            # factor_z = []
-            # for (_, mean, ln_var) in factorized_z_distribution:
-            #     factor_z.append(_.data)
+            rx, bk_ldt = decoder.reverse_step(factor_z)
+            rx_img = make_uint8(rx.data[0], num_bins_x)
+            pro_rev_x.append(rx_img)
+            pro_bk_logdet.append(bk_ldt.data)
             
 
 
