@@ -122,10 +122,13 @@ def main():
             factor_z = []
             ez = []
             nll = 0
+            i = 0
             for (zi, mean, ln_var) in factorized_z_distribution:
                 nll += cf.gaussian_nll(zi, mean, ln_var)
                 factor_z.append(zi.data)
-                ez.append(zi.data.reshape(1, -1))
+                ez.append(zi.data.reshape(-1, 1))
+                print(ez[i].shape)
+                i += 1
             
             ez = np.concatenate(ez)
             print('ez shape:', ez.shape)
