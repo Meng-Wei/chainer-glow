@@ -96,15 +96,12 @@ def main():
 
     with chainer.no_backprop_mode() and encoder.reverse() as decoder:
         for data_indices in iterator:
-            # print("data:", data_indices)
+            print("data:", data_indices)
             x = to_gpu(dataset[data_indices])
-            print('x.shape', x.shape)
             x += xp.random.uniform(0, 1.0 / num_bins_x, size=x.shape)
             factorized_z_distribution, _ = encoder.forward_step(x)
             for (_, mean, ln_var) in factorized_z_distribution:
-                print(_.shape)
-                # print(xp.mean(mean.data), xp.mean(xp.exp(ln_var.data)))
-            print('\n')
+                print(xp.mean(mean.data), xp.mean(xp.exp(ln_var.data)))
 
 
 if __name__ == "__main__":
