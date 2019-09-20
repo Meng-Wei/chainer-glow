@@ -102,51 +102,58 @@ def main():
 
     assert args.dataset_format in ["png", "npy"]
 
-    files = Path(args.dataset_path).glob("*.{}".format(args.dataset_format))
-    if args.dataset_format == "png":
-        images = []
-        for filepath in files:
-            image = np.array(Image.open(filepath)).astype("float32")
-            image = preprocess(image, args.num_bits_x)
-            images.append(image)
-        assert len(images) > 0
-        images = np.asanyarray(images)
-    elif args.dataset_format == "npy":
-        images = []
-        for filepath in files:
-            array = np.load(filepath).astype("float32")
-            array = preprocess(array, args.num_bits_x)
-            images.append(array)
-        assert len(images) > 0
-        num_files = len(images)
-        images = np.asanyarray(images)
-        images = images.reshape((num_files * images.shape[1], ) +
-                                images.shape[2:])
-    else:
-        raise NotImplementedError
+    # Get datasets:
+    if True:
+        files = Path(args.dataset_path).glob("*.{}".format(args.dataset_format))
+        if args.dataset_format == "png":
+            images = []
+            for filepath in files:
+                image = np.array(Image.open(filepath)).astype("float32")
+                image = preprocess(image, args.num_bits_x)
+                images.append(image)
+            assert len(images) > 0
+            images = np.asanyarray(images)
+        elif args.dataset_format == "npy":
+            images = []
+            for filepath in files:
+                array = np.load(filepath).astype("float32")
+                # TODO: Preprocess here
+                array = preprocess(array, args.num_bits_x)
+                images.append(array)
+            assert len(images) > 0
+            num_files = len(images)
+            images = np.asanyarray(images)
+            images = images.reshape((num_files * images.shape[1], ) +
+                                    images.shape[2:])
+        else:
+            raise NotImplementedError
 
-    x_mean = np.mean(images)
-    x_var = np.var(images)
+    # Print dataset information
+    if True:
+        x_mean = np.mean(images)
+        x_var = np.var(images)
 
-    dataset = glow.dataset.Dataset(images)
-    iterator = glow.dataset.Iterator(dataset, batch_size=args.batch_size)
+        dataset = glow.dataset.Dataset(images)
+        iterator = glow.dataset.Iterator(dataset, batch_size=args.batch_size)
 
-    print(tabulate([
-        ["#", len(dataset)],
-        ["mean", x_mean],
-        ["var", x_var],
-    ]))
+        print(tabulate([
+            ["#", len(dataset)],
+            ["mean", x_mean],
+            ["var", x_var],
+        ]))
 
-    hyperparams = Hyperparameters()
-    hyperparams.levels = args.levels
-    hyperparams.depth_per_level = args.depth_per_level
-    hyperparams.nn_hidden_channels = args.nn_hidden_channels
-    hyperparams.image_size = images.shape[2:]
-    hyperparams.num_bits_x = args.num_bits_x
-    hyperparams.lu_decomposition = args.lu_decomposition
-    hyperparams.squeeze_factor = args.squeeze_factor
-    hyperparams.save(args.snapshot_path)
-    hyperparams.print()
+    # Hyperparameters' info
+    if True:
+        hyperparams = Hyperparameters()
+        hyperparams.levels = args.levels
+        hyperparams.depth_per_level = args.depth_per_level
+        hyperparams.nn_hidden_channels = args.nn_hidden_channels
+        hyperparams.image_size = images.shape[2:]
+        hyperparams.num_bits_x = args.num_bits_x
+        hyperparams.lu_decomposition = args.lu_decomposition
+        hyperparams.squeeze_factor = args.squeeze_factor
+        hyperparams.save(args.snapshot_path)
+        hyperparams.print()
 
     encoder = Glow(hyperparams, hdf5_path=args.snapshot_path)
     if using_gpu:
