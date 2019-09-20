@@ -1,0 +1,1 @@
+python3 inference.py --snapshot-path ../snapshot/ -dataset /home/data1/meng/chainer/celeba-64x64-images-npy/ --gpu-device 1 -ext npy

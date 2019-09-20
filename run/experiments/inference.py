@@ -154,6 +154,7 @@ def main():
             ez = []
             nll = 0
             for (zi, mean, ln_var) in factorized_z_distribution:
+                pritn(mean, ln_var)
                 nll += cf.gaussian_nll(zi, mean, ln_var)
                 factor_z.append(zi.data)
                 ez.append(zi.data.reshape(-1,))
@@ -167,6 +168,7 @@ def main():
             print('all var: ', np.var(ez))
             print('all: ', cf.gaussian_nll(ez, np.mean(ez), np.var(ez)).data)
 
+            print('\n')
             rx, bk_ldt = decoder.reverse_step(factor_z)
             rx_img = make_uint8(rx.data[0], num_bins_x)
             pro_rev_x.append(rx_img)
