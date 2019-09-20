@@ -1,0 +1,1 @@
+python3 train.py -dataset /home/data1/meng/chainer/celeba-64x64-images-npy -b 4 -depth 32 -levels 4 -nn 512 -bits 5 -ext npy 1>a.txt 2>b.txt 

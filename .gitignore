@@ -1,17 +1,6 @@
-# ignore all
-*
-
-# allow any
-!*/
-!*.py
-!*.h
-!*.c
-!*.hpp
-!*.cpp
-!*.md
-!*.inl
-!.gitignore
-!makefile
+data/*
+*.npy
+*.pyc
 
 # ignore
 .vscode
