@@ -125,13 +125,14 @@ def main():
             for (zi, mean, ln_var) in factorized_z_distribution:
                 nll += cf.gaussian_nll(zi, mean, ln_var)
                 factor_z.append(zi.data)
-                print(zi.data.shape)
-                # ez += zi.data
-            print('len ez: ', len(ez))
+                ez.append(zi.data)
+            
+            ez = np.concatenate(ez, axis=0)
+            print('ez shape:', ez.shape)
             enc_z.append(ez)
-            print('nll', nll)
+            print('nll: ', nll.data)
             logpZ.append(nll)
-            print('all', cf.gaussian_nll(ez, np.mean(ez), np.var(ez)))
+            print('all: ', cf.gaussian_nll(ez, np.mean(ez), np.var(ez)))
 
             rx, bk_ldt = decoder.reverse_step(factor_z)
             rx_img = make_uint8(rx.data[0], num_bins_x)
