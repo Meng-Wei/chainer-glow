@@ -121,7 +121,8 @@ def main():
             x_img = make_uint8(x[0], num_bins_x)
             ori_x.append(x_img) # 64x64x3
             factorized_z_distribution, fw_ldt = encoder.forward_step(x)
-            fw_logdet.append(fw_ldt.data)
+            fw_logdet.append(fw_ldt.data.get())
+            print('fw_log', type(fw_logdet[0]), fw_logdet[0])
 
             factor_z = []
             ez = []
@@ -133,20 +134,23 @@ def main():
             
             ez = np.concatenate(ez)
             enc_z.append(ez.get())
-            logpZ.append(nll.data)
-            logpZ2.append(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez)))) 
+            logpZ.append(nll.data.get())
+            print('logpZ', type(logpZ[0]), logpZ[0])
+            logpZ2.append(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).get() )
+            print('logpZ2', type(logpZ2[0]), logpZ2[0]) 
 
             rx, bk_ldt = decoder.reverse_step(factor_z)
             rx_img = make_uint8(rx.data[0], num_bins_x)
             rev_x.append(rx_img)
-            bk_logdet.append(bk_ldt.data)
+            bk_logdet.append(bk_ldt.data.get())
+            print('bk_log', type(bk_logdet[0]), bk_logdet[0])
 
             # Pre-process
             x += xp.random.uniform(0, 1.0 / num_bins_x, size=x.shape)
             x_img = make_uint8(x[0], num_bins_x)
             pro_ori_x.append(x_img) # 64x64x3
             factorized_z_distribution, fw_ldt = encoder.forward_step(x)
-            pro_fw_logdet.append(fw_ldt.data)
+            pro_fw_logdet.append(fw_ldt.data.get())
 
             factor_z = []
             ez = []
@@ -158,8 +162,8 @@ def main():
             
             ez = np.concatenate(ez)
             pro_enc_z.append(ez.get())
-            pro_logpZ.append(nll.data)
-            pro_logpZ2.append(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))))
+            pro_logpZ.append(nll.data.get())
+            pro_logpZ2.append(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).get() )
 
             rx, bk_ldt = decoder.reverse_step(factor_z)
             rx_img = make_uint8(rx.data[0], num_bins_x)
@@ -171,7 +175,7 @@ def main():
                 np.save(str(i)+'/fw_logdet.npy', fw_logdet)
                 np.save(str(i)+'/enc_z.npy', enc_z)
                 np.save(str(i)+'/logpZ.npy', logpZ)
-                np.save(str(i)+'/lopZ2.npy', logpZ2)
+                np.save(str(i)+'/logpZ2.npy', logpZ2)
                 np.save(str(i)+'/rev_x.npy', rev_x)
                 np.save(str(i)+'/bk_logdet.npy', bk_logdet)
 
@@ -179,7 +183,7 @@ def main():
                 np.save(str(i)+'/pro_fw_logdet.npy', pro_fw_logdet)
                 np.save(str(i)+'/pro_enc_z.npy', pro_enc_z)
                 np.save(str(i)+'/pro_logpZ.npy', pro_logpZ)
-                np.save(str(i)+'/pro_lopZ2.npy', pro_logpZ2)
+                np.save(str(i)+'/pro_logpZ2.npy', pro_logpZ2)
                 np.save(str(i)+'/pro_rev_x.npy', pro_rev_x)
                 np.save(str(i)+'/pro_bk_logdet.npy', pro_bk_logdet)
 
