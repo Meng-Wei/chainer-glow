@@ -121,7 +121,7 @@ def main():
             x_img = make_uint8(x[0], num_bins_x)
             ori_x.append(x_img) # 64x64x3
             factorized_z_distribution, fw_ldt = encoder.forward_step(x)
-            fw_logdet.append(fw_ldt.data)
+            fw_logdet.append(cupy.asnumpy(fw_ldt.data))
 
             # factor_z = []
             # ez = []
@@ -168,7 +168,7 @@ def main():
 
             if i % 4 == 0:
                 np.save(str(i)+'/ori_x.npy', ori_x)
-                fw_logdet = cupy.asnumpy(fw_logdet).get()
+                fw_logdet = cupy.asnumpy(fw_logdet)
                 print(type(fw_logdet))
                 print(type(fw_logdet[0]))
                 np.save(str(i)+'/fw_logdet.npy', fw_logdet)
