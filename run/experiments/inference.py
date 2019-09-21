@@ -121,7 +121,7 @@ def main():
             x_img = make_uint8(x[0], num_bins_x)
             ori_x.append(x_img) # 64x64x3
             factorized_z_distribution, fw_ldt = encoder.forward_step(x)
-            fw_logdet.append(fw_ldt.data.get())
+            fw_logdet.append(fw_ldt.data)
             print('fw_log', type(fw_logdet[0]), fw_logdet[0])
 
             factor_z = []
@@ -134,15 +134,15 @@ def main():
             
             ez = np.concatenate(ez)
             enc_z.append(ez.get())
-            logpZ.append(nll.data.get())
+            logpZ.append(nll.data)
             print('logpZ', type(logpZ[0]), logpZ[0])
-            logpZ2.append(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).get() )
+            logpZ2.append(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))) )
             print('logpZ2', type(logpZ2[0]), logpZ2[0]) 
 
             rx, bk_ldt = decoder.reverse_step(factor_z)
             rx_img = make_uint8(rx.data[0], num_bins_x)
             rev_x.append(rx_img)
-            bk_logdet.append(bk_ldt.data.get())
+            bk_logdet.append(bk_ldt.data)
             print('bk_log', type(bk_logdet[0]), bk_logdet[0])
 
             # Pre-process
@@ -150,7 +150,7 @@ def main():
             x_img = make_uint8(x[0], num_bins_x)
             pro_ori_x.append(x_img) # 64x64x3
             factorized_z_distribution, fw_ldt = encoder.forward_step(x)
-            pro_fw_logdet.append(fw_ldt.data.get())
+            pro_fw_logdet.append(fw_ldt.data)
 
             factor_z = []
             ez = []
@@ -162,8 +162,8 @@ def main():
             
             ez = np.concatenate(ez)
             pro_enc_z.append(ez.get())
-            pro_logpZ.append(nll.data.get())
-            pro_logpZ2.append(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).get() )
+            pro_logpZ.append(nll.data)
+            pro_logpZ2.append(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))))
 
             rx, bk_ldt = decoder.reverse_step(factor_z)
             rx_img = make_uint8(rx.data[0], num_bins_x)
