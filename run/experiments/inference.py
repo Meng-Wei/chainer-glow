@@ -123,73 +123,73 @@ def main():
             factorized_z_distribution, fw_ldt = encoder.forward_step(x)
             fw_logdet.append(fw_ldt.data)
 
-            factor_z = []
-            ez = []
-            nll = 0
-            for (zi, mean, ln_var) in factorized_z_distribution:
-                nll += cf.gaussian_nll(zi, mean, ln_var)
-                factor_z.append(zi.data)
-                ez.append(zi.data.reshape(-1,))
+            # factor_z = []
+            # ez = []
+            # nll = 0
+            # for (zi, mean, ln_var) in factorized_z_distribution:
+            #     nll += cf.gaussian_nll(zi, mean, ln_var)
+            #     factor_z.append(zi.data)
+            #     ez.append(zi.data.reshape(-1,))
             
-            ez = np.concatenate(ez)
-            enc_z.append(ez.get())
-            logpZ.append(nll.data)
-            logpZ2.append(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data )
+            # ez = np.concatenate(ez)
+            # enc_z.append(ez.get())
+            # logpZ.append(nll.data)
+            # logpZ2.append(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data )
 
-            rx, bk_ldt = decoder.reverse_step(factor_z)
-            rx_img = make_uint8(rx.data[0], num_bins_x)
-            rev_x.append(rx_img)
-            bk_logdet.append(bk_ldt.data)
+            # rx, bk_ldt = decoder.reverse_step(factor_z)
+            # rx_img = make_uint8(rx.data[0], num_bins_x)
+            # rev_x.append(rx_img)
+            # bk_logdet.append(bk_ldt.data)
 
-            # Pre-process
-            x += xp.random.uniform(0, 1.0 / num_bins_x, size=x.shape)
-            x_img = make_uint8(x[0], num_bins_x)
-            pro_ori_x.append(x_img) # 64x64x3
-            factorized_z_distribution, fw_ldt = encoder.forward_step(x)
-            pro_fw_logdet.append(fw_ldt.data)
+            # # Pre-process
+            # x += xp.random.uniform(0, 1.0 / num_bins_x, size=x.shape)
+            # x_img = make_uint8(x[0], num_bins_x)
+            # pro_ori_x.append(x_img) # 64x64x3
+            # factorized_z_distribution, fw_ldt = encoder.forward_step(x)
+            # pro_fw_logdet.append(fw_ldt.data)
 
-            factor_z = []
-            ez = []
-            nll = 0
-            for (zi, mean, ln_var) in factorized_z_distribution:
-                nll += cf.gaussian_nll(zi, mean, ln_var)
-                factor_z.append(zi.data)
-                ez.append(zi.data.reshape(-1,))
+            # factor_z = []
+            # ez = []
+            # nll = 0
+            # for (zi, mean, ln_var) in factorized_z_distribution:
+            #     nll += cf.gaussian_nll(zi, mean, ln_var)
+            #     factor_z.append(zi.data)
+            #     ez.append(zi.data.reshape(-1,))
             
-            ez = np.concatenate(ez)
-            pro_enc_z.append(ez.get())
-            pro_logpZ.append(nll.data)
-            pro_logpZ2.append(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data )
+            # ez = np.concatenate(ez)
+            # pro_enc_z.append(ez.get())
+            # pro_logpZ.append(nll.data)
+            # pro_logpZ2.append(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data )
 
-            rx, bk_ldt = decoder.reverse_step(factor_z)
-            rx_img = make_uint8(rx.data[0], num_bins_x)
-            pro_rev_x.append(rx_img)
-            pro_bk_logdet.append(bk_ldt.data)
+            # rx, bk_ldt = decoder.reverse_step(factor_z)
+            # rx_img = make_uint8(rx.data[0], num_bins_x)
+            # pro_rev_x.append(rx_img)
+            # pro_bk_logdet.append(bk_ldt.data)
 
             if i % 4 == 0:
                 np.save(str(i)+'/ori_x.npy', ori_x)
-                fw_logdet = np.array(fw_logdet)
+                fw_logdet = np.concatenate(fw_logdet).get()
                 np.save(str(i)+'/fw_logdet.npy', fw_logdet)
-                np.save(str(i)+'/enc_z.npy', enc_z)
-                logpZ = np.array(logpZ)
-                np.save(str(i)+'/logpZ.npy', logpZ)
-                logpZ2 = np.array(logpZ2)
-                np.save(str(i)+'/logpZ2.npy', logpZ2)
-                np.save(str(i)+'/rev_x.npy', rev_x)
-                bk_logdet = np.array(bk_logdet)
-                np.save(str(i)+'/bk_logdet.npy', bk_logdet)
+                # np.save(str(i)+'/enc_z.npy', enc_z)
+                # logpZ = np.array(logpZ)
+                # np.save(str(i)+'/logpZ.npy', logpZ)
+                # logpZ2 = np.array(logpZ2)
+                # np.save(str(i)+'/logpZ2.npy', logpZ2)
+                # np.save(str(i)+'/rev_x.npy', rev_x)
+                # bk_logdet = np.array(bk_logdet)
+                # np.save(str(i)+'/bk_logdet.npy', bk_logdet)
 
-                np.save(str(i)+'/pro_ori_x.npy', pro_ori_x)
-                pro_fw_logdet = np.array(pro_fw_logdet)
-                np.save(str(i)+'/pro_fw_logdet.npy', pro_fw_logdet)
-                np.save(str(i)+'/pro_enc_z.npy', pro_enc_z)
-                pro_logpZ = np.array(pro_logpZ)
-                np.save(str(i)+'/pro_logpZ.npy', pro_logpZ)
-                pro_logpZ2 = np.array(pro_logpZ2)
-                np.save(str(i)+'/pro_logpZ2.npy', pro_logpZ2)
-                np.save(str(i)+'/pro_rev_x.npy', pro_rev_x)
-                pro_bk_logdet = np.array(pro_bk_logdet)
-                np.save(str(i)+'/pro_bk_logdet.npy', pro_bk_logdet)
+                # np.save(str(i)+'/pro_ori_x.npy', pro_ori_x)
+                # pro_fw_logdet = np.array(pro_fw_logdet)
+                # np.save(str(i)+'/pro_fw_logdet.npy', pro_fw_logdet)
+                # np.save(str(i)+'/pro_enc_z.npy', pro_enc_z)
+                # pro_logpZ = np.array(pro_logpZ)
+                # np.save(str(i)+'/pro_logpZ.npy', pro_logpZ)
+                # pro_logpZ2 = np.array(pro_logpZ2)
+                # np.save(str(i)+'/pro_logpZ2.npy', pro_logpZ2)
+                # np.save(str(i)+'/pro_rev_x.npy', pro_rev_x)
+                # pro_bk_logdet = np.array(pro_bk_logdet)
+                # np.save(str(i)+'/pro_bk_logdet.npy', pro_bk_logdet)
 
                 ori_x = []
                 fw_logdet = []
