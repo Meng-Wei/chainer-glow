@@ -135,7 +135,7 @@ def main():
             enc_z.append(ez.get())
             logpZ.append(nll.data)
             print(type(logpZ))
-            logpZ2.append(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).get() ) 
+            logpZ2.append(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez)))) 
             print(type(logpZ2))
 
             rx, bk_ldt = decoder.reverse_step(factor_z)
@@ -163,7 +163,7 @@ def main():
             ez = np.concatenate(ez)
             pro_enc_z.append(ez.get())
             pro_logpZ.append(nll.data)
-            pro_logpZ2.append(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).get())
+            pro_logpZ2.append(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))))
 
             rx, bk_ldt = decoder.reverse_step(factor_z)
             rx_img = make_uint8(rx.data[0], num_bins_x)
