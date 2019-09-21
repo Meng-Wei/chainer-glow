@@ -73,8 +73,8 @@ def main():
         sec_pz = []
         sec_pz2 = []
 
-        while j < 4: 
-            j += 1
+        while j < 6: 
+            i += 1
 
             z = xp.random.normal(
                 0, args.temperature, size=(
@@ -92,7 +92,6 @@ def main():
             x_img = make_uint8(x.data[0], num_bins_x)
             rev_x.append(x_img)
             bk_logdet.append(cupy.asnumpy(blogd.data))
-            print(type(bk_logdet[0]))
 
             factorized_z_distribution, fw_ldt = encoder.forward_step(x)
             fw_logdet.append(cupy.asnumpy(fw_ldt.data))
@@ -111,28 +110,31 @@ def main():
             sec_pz2.append(
                 cupy.asnumpy(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data ))
 
-            np.save('sample/' + str(j) + 'enc_z.npy', enc_z)
-            np.save('sample/' + str(j) + 'rev_x.npy', rev_x)
-            bk_logdet = cupy.asnumpy(bk_logdet)
-            np.save('sample/' + str(j) + 'bk_logdet.npy', bk_logdet)
-            logpZ2 = cupy.asnumpy(logpZ2)
-            np.save('sample/' + str(j) + 'logpZ2.npy', logpZ2)
-            fw_logdet = cupy.asnumpy(fw_logdet)
-            np.save('sample/' + str(j) + 'fw_logdet.npy', fw_logdet)
-            np.save('sample/' + str(j) + 'sec_z.npy', sec_z)
-            sec_pz = cupy.asnumpy(sec_pz)
-            np.save('sample/' + str(j) + 'sec_pz.npy', sec_pz)
-            sec_pz = cupy.asnumpy(sec_pz2)
-            np.save('sample/' + str(j) + 'sec_pz.npy', sec_pz2)
-            return
-            enc_z = []
-            rev_x = []
-            bk_logdet = []
-            logpZ2 = []
-            fw_logdet = []
-            sec_z = []
-            sec_pz = []
-            sec_pz2 = []
+            if i % 250 == 0:
+                i = 0
+                j += 1
+                print('dataset: ', j)
+                np.save('sample/' + str(j) + 'enc_z.npy', enc_z)
+                np.save('sample/' + str(j) + 'rev_x.npy', rev_x)
+                bk_logdet = cupy.asnumpy(bk_logdet)
+                np.save('sample/' + str(j) + 'bk_logdet.npy', bk_logdet)
+                logpZ2 = cupy.asnumpy(logpZ2)
+                np.save('sample/' + str(j) + 'logpZ2.npy', logpZ2)
+                fw_logdet = cupy.asnumpy(fw_logdet)
+                np.save('sample/' + str(j) + 'fw_logdet.npy', fw_logdet)
+                np.save('sample/' + str(j) + 'sec_z.npy', sec_z)
+                sec_pz = cupy.asnumpy(sec_pz)
+                np.save('sample/' + str(j) + 'sec_pz.npy', sec_pz)
+                sec_pz = cupy.asnumpy(sec_pz2)
+                np.save('sample/' + str(j) + 'sec_pz.npy', sec_pz2)
+                enc_z = []
+                rev_x = []
+                bk_logdet = []
+                logpZ2 = []
+                fw_logdet = []
+                sec_z = []
+                sec_pz = []
+                sec_pz2 = []
 
 
 
