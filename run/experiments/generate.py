@@ -75,7 +75,7 @@ def main():
 
         while j < 4: 
             j += 1
-            
+
             z = xp.random.normal(
                 0, args.temperature, size=(
                     1,
@@ -83,8 +83,7 @@ def main():
                 ) + hyperparams.image_size).astype("float32")
 
             enc_z.append(cupy.asnumpy(z))
-            print(type(enc_z[0]))
-            lvar = np.log(args.temperature)
+            lvar = xp.log(args.temperature)
             logpZ2.append(
                 cupy.asnumpy(cf.gaussian_nll(z, 0, lvar).data)
             )

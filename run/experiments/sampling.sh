@@ -1,0 +1,1 @@
+python3 generate.py --snapshot-path /home/data1/meng/chainer/snapshot_64  --gpu-device 1
