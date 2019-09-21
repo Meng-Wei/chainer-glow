@@ -168,7 +168,9 @@ def main():
 
             if i % 4 == 0:
                 np.save(str(i)+'/ori_x.npy', ori_x)
-                fw_logdet = np.concatenate(fw_logdet).get()
+                fw_logdet = cupy.asnumpy(fw_logdet).get()
+                print(type(fw_logdet))
+                print(type(fw_logdet[0]))
                 np.save(str(i)+'/fw_logdet.npy', fw_logdet)
                 # np.save(str(i)+'/enc_z.npy', enc_z)
                 # logpZ = np.array(logpZ)
