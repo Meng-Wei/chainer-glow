@@ -168,7 +168,7 @@ def main():
             pro_rev_x.append(rx_img)
             pro_bk_logdet.append(cupy.asnumpy(bk_ldt.data))
 
-            if i % 4 == 0:
+            if i % 100 == 0:
                 np.save(str(i)+'/ori_x.npy', ori_x)
                 fw_logdet = cupy.asnumpy(fw_logdet)
                 np.save(str(i)+'/fw_logdet.npy', fw_logdet)
@@ -208,7 +208,6 @@ def main():
                 pro_bk_logdet = []
                 pro_logpZ = []
                 pro_logpZ2 = []
-                return
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
