@@ -133,9 +133,6 @@ def main():
             
             ez = np.concatenate(ez)
             enc_z.append(ez.get())
-            print(type(enc_z[0]))
-            print(enc_z[0].shape)
-            return
             logpZ.append(nll.data)
             logpZ2.append(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))) ) 
 
@@ -201,7 +198,7 @@ def main():
                 pro_bk_logdet = []
                 pro_logpZ = []
                 pro_logpZ2 = []
-
+                return
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
