@@ -133,8 +133,10 @@ def main():
             
             ez = np.concatenate(ez)
             enc_z.append(ez.get())
-            logpZ.append(nll.data)
-            logpZ2.append(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))) ) 
+            logpZ.append(nll.get())
+            print(type(logpZ))
+            logpZ2.append(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).get() ) 
+            print(type(logpZ2))
 
             rx, bk_ldt = decoder.reverse_step(factor_z)
             rx_img = make_uint8(rx.data[0], num_bins_x)
@@ -157,9 +159,9 @@ def main():
                 ez.append(zi.data.reshape(-1,))
             
             ez = np.concatenate(ez)
-            pro_enc_z.append(ez)
-            pro_logpZ.append(nll.data)
-            pro_logpZ2.append(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))))
+            pro_enc_z.append(ez.get())
+            pro_logpZ.append(nll.get())
+            pro_logpZ2.append(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).get())
 
             rx, bk_ldt = decoder.reverse_step(factor_z)
             rx_img = make_uint8(rx.data[0], num_bins_x)
@@ -167,21 +169,21 @@ def main():
             pro_bk_logdet.append(bk_ldt.data)
 
             if i % 10 == 0:
-                np.save('ori_x'+str(i)+'.npy', ori_x)
-                np.save('fw_logdet'+str(i)+'.npy', fw_logdet)
-                np.save('enc_z'+str(i)+'.npy', enc_z)
-                np.save('logpZ'+str(i)+'.npy', logpZ)
-                np.save('lopZ2'+str(i)+'.npy', logpZ2)
-                np.save('rev_x'+str(i)+'.npy', rev_x)
-                np.save('bk_logdet'+str(i)+'.npy', bk_logdet)
+                np.save(str(i)+'/ori_x.npy', ori_x)
+                np.save(str(i)+'/fw_logdet.npy', fw_logdet)
+                np.save(str(i)+'/enc_z.npy', enc_z)
+                np.save(str(i)+'/logpZ.npy', logpZ)
+                np.save(str(i)+'/lopZ2.npy', logpZ2)
+                np.save(str(i)+'/rev_x.npy', rev_x)
+                np.save(str(i)+'/bk_logdet.npy', bk_logdet)
 
-                np.save('pro_ori_x'+str(i)+'.npy', pro_ori_x)
-                np.save('pro_fw_logdet'+str(i)+'.npy', pro_fw_logdet)
-                np.save('pro_enc_z'+str(i)+'.npy', pro_enc_z)
-                np.save('pro_logpZ'+str(i)+'.npy', pro_logpZ)
-                np.save('pro_lopZ2'+str(i)+'.npy', pro_logpZ2)
-                np.save('pro_rev_x'+str(i)+'.npy', pro_rev_x)
-                np.save('pro_bk_logdet'+str(i)+'.npy', pro_bk_logdet)
+                np.save(str(i)+'/pro_ori_x.npy', pro_ori_x)
+                np.save(str(i)+'/pro_fw_logdet.npy', pro_fw_logdet)
+                np.save(str(i)+'/pro_enc_z.npy', pro_enc_z)
+                np.save(str(i)+'/pro_logpZ.npy', pro_logpZ)
+                np.save(str(i)+'/pro_lopZ2.npy', pro_logpZ2)
+                np.save(str(i)+'/pro_rev_x.npy', pro_rev_x)
+                np.save(str(i)+'/pro_bk_logdet.npy', pro_bk_logdet)
 
                 ori_x = []
                 fw_logdet = []
