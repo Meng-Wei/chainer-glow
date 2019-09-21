@@ -132,7 +132,10 @@ def main():
                 ez.append(zi.data.reshape(-1,))
             
             ez = np.concatenate(ez)
-            enc_z.append(ez)
+            enc_z.append(ez.data)
+            print(type(enc_z[0]))
+            print(enc_z[0].shape)
+            return
             logpZ.append(nll.data)
             logpZ2.append(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))) ) 
 
@@ -165,7 +168,7 @@ def main():
             rx_img = make_uint8(rx.data[0], num_bins_x)
             pro_rev_x.append(rx_img)
             pro_bk_logdet.append(bk_ldt.data)
-    
+
             if i % 10 == 0:
                 np.save('ori_x'+str(i)+'.npy', ori_x)
                 np.save('fw_logdet'+str(i)+'.npy', fw_logdet)
@@ -182,6 +185,22 @@ def main():
                 np.save('pro_lopZ2'+str(i)+'.npy', pro_logpZ2)
                 np.save('pro_rev_x'+str(i)+'.npy', pro_rev_x)
                 np.save('pro_bk_logdet'+str(i)+'.npy', pro_bk_logdet)
+
+                ori_x = []
+                fw_logdet = []
+                enc_z = []
+                logpZ = []
+                logpZ2 = []
+                rev_x = []
+                bk_logdet = []
+
+                pro_ori_x = []
+                pro_enc_z = []
+                pro_rev_x = []
+                pro_fw_logdet = []
+                pro_bk_logdet = []
+                pro_logpZ = []
+                pro_logpZ2 = []
 
 
 if __name__ == "__main__":
