@@ -85,13 +85,12 @@ def main():
             enc_z.append(cupy.asnumpy(z))
             lvar = xp.log(args.temperature)
             logpZ2.append(
-                cupy.asnumpy(cf.gaussian_nll(z, 0, lvar).data)
+                cf.gaussian_nll(z, 0, lvar).data
             )
 
             x, blogd = decoder.reverse_step(z)
             x_img = make_uint8(x.data[0], num_bins_x)
             rev_x.append(x_img)
-            print('rev_x', type(rev_x[0]))
             bk_logdet.append(cupy.asnumpy(blogd.data))
             print(type(bk_logdet[0]))
 
