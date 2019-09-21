@@ -134,16 +134,12 @@ def main():
             ez = np.concatenate(ez)
             enc_z.append(ez.get())
             logpZ.append(nll.data)
-            print(type(logpZ))
             logpZ2.append(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez)))) 
-            print(type(logpZ2))
 
             rx, bk_ldt = decoder.reverse_step(factor_z)
             rx_img = make_uint8(rx.data[0], num_bins_x)
             rev_x.append(rx_img)
-            print(type(rev_x))
             bk_logdet.append(bk_ldt.data)
-            print(type(bk_logdet))
 
             # Pre-process
             x += xp.random.uniform(0, 1.0 / num_bins_x, size=x.shape)
