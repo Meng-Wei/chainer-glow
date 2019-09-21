@@ -132,7 +132,7 @@ def main():
                 ez.append(zi.data.reshape(-1,))
             
             ez = np.concatenate(ez)
-            enc_z.append(ez.data)
+            enc_z.append(ez.data.get())
             print(type(enc_z[0]))
             print(enc_z[0].shape)
             return
