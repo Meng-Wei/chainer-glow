@@ -85,7 +85,7 @@ def main():
             enc_z.append(cupy.asnumpy(z))
             lvar = xp.log(args.temperature)
             logpZ2.append(
-                cf.gaussian_nll(z, 0, lvar).data
+                cupy.asnumpy(cf.gaussian_nll(z, 0, lvar).data)
             )
 
             x, blogd = decoder.reverse_step(z)
@@ -111,14 +111,6 @@ def main():
             sec_pz2.append(
                 cupy.asnumpy(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data ))
 
-            enc_z = []
-            rev_x = []
-            bk_logdet = []
-            logpZ2 = []
-            fw_logdet = []
-            sec_z = []
-            sec_pz = []
-            sec_pz2 = []
             np.save('sample/' + str(j) + 'enc_z.npy', enc_z)
             np.save('sample/' + str(j) + 'rev_x.npy', rev_x)
             bk_logdet = cupy.asnumpy(bk_logdet)
@@ -132,7 +124,15 @@ def main():
             np.save('sample/' + str(j) + 'sec_pz.npy', sec_pz)
             sec_pz = cupy.asnumpy(sec_pz2)
             np.save('sample/' + str(j) + 'sec_pz.npy', sec_pz2)
-
+            return
+            enc_z = []
+            rev_x = []
+            bk_logdet = []
+            logpZ2 = []
+            fw_logdet = []
+            sec_z = []
+            sec_pz = []
+            sec_pz2 = []
 
 
 
