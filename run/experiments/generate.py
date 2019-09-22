@@ -125,8 +125,8 @@ def main():
                 np.save('sample/' + str(j) + 'sec_z.npy', sec_z)
                 sec_pz = cupy.asnumpy(sec_pz)
                 np.save('sample/' + str(j) + 'sec_pz.npy', sec_pz)
-                sec_pz = cupy.asnumpy(sec_pz2)
-                np.save('sample/' + str(j) + 'sec_pz.npy', sec_pz2)
+                sec_pz2 = cupy.asnumpy(sec_pz2)
+                np.save('sample/' + str(j) + 'sec_pz2.npy', sec_pz2)
                 enc_z = []
                 rev_x = []
                 bk_logdet = []
@@ -135,10 +135,6 @@ def main():
                 sec_z = []
                 sec_pz = []
                 sec_pz2 = []
-
-
-
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
