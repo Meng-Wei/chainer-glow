@@ -137,7 +137,9 @@ def main():
 
             with self.init_scope():
                 self.b = chainer.Parameter(
-                    initializers.Normal(dtype='float64'), shape)
+                    initializers.Normal(), shape)
+                # self.b = chainer.Parameter(
+                #     initializers.Normal(dtype='float64'), shape)
         
         def forward(self, x):
             cur_x = cf.add(x, self.b)
