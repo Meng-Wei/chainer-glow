@@ -190,11 +190,15 @@ def main():
 
             kld = 0
             negative_log_likelihood = 0
+            factor_z = []
             for (zi, mean, ln_var) in factorized_z_distribution:
                 negative_log_likelihood += cf.gaussian_nll(zi, mean, ln_var)
                 if args.regularize_z:
                     kld += cf.gaussian_kl_divergence(mean, ln_var)
-
+                print(zi.shape)
+                factor_z.append(zi.reshape(zi[0], -1))
+            factor_z = xp.concatenate(factor_z)
+            negative_log_likelihood += cf.gaussian_nll(factor_z, 0, 0)
             loss = (negative_log_likelihood + kld) / args.batch_size - logdet
             loss = loss / denom
 
