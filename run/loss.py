@@ -162,11 +162,15 @@ def main():
     print('init finish')
 
     training_step = 0
-    zs = []
-    bs = []
 
     for iteration in range(args.total_iteration):
         start_time = time.time()
+        z_s = []
+        b_s = []
+        loss_s = []
+        logpZ_s = []
+        logDet_s = []
+
 
         # ori_x += epsilon
         # z, fw_ldt = encoder.forward_step(ori_x)
@@ -185,8 +189,11 @@ def main():
         optimizer.update(training_step)
         training_step += 1
 
-        zs.append(np.concatenate(ez).get())
-        bs.append(b)
+        z_s.append(np.concatenate(ez).get())
+        b_s.append(b.get())
+        loss_s.append(_float(loss))
+        logpZ_s.append(_float(logpZ))
+        logDet_s.append(_float(fw_ldt))
 
         printr(
             "Iteration {}: Batch {} - loss: {:.8f} - logpZ: {:.8f} - log_det: {:.8f}".
@@ -197,9 +204,18 @@ def main():
                 _float(fw_ldt)
             )
         )
-    
-    np.save('z.npy', zs)
-    np.save('b.npy', bs)
+
+        if iteration % 10 == 0:
+            np.save('logs/z.npy', z_s)
+            np.save('logs/b.npy', b_s)
+            np.save('logs/loss.npy', loss_s)
+            np.save('logs/logpZ.npy', logpZ_s)
+            np.save('logs/logDet.npy', logDet_s)
+        z_s = []
+        b_s = []
+        loss_s = []
+        logpZ_s = []
+        logDet_s = []
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -209,6 +225,6 @@ if __name__ == "__main__":
     parser.add_argument('--ckpt', type=str, default='logs')
     # parser.add_argument("--dataset-path", "-dataset", type=str, required=False)
     # parser.add_argument("--dataset-format", "-ext", type=str, required=True)
-    parser.add_argument("--total-iteration", "-iter", type=int, default=10)
+    parser.add_argument("--total-iteration", "-iter", type=int, default=11)
     args = parser.parse_args()
     main()
