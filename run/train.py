@@ -197,7 +197,7 @@ def main():
                     kld += cf.gaussian_kl_divergence(mean, ln_var)
                 factor_z.append(zi.data.reshape(zi.shape[0], -1))
             factor_z = xp.concatenate(factor_z, axis=1)
-            negative_log_likelihood += cf.gaussian_nll(factor_z, xp.zeros(factor_z.shape), xp.zeros(factor_z.shape))
+            negative_log_likelihood += cf.gaussian_nll(factor_z, xp.zeros(factor_z.shape, dtype='float32'), xp.zeros(factor_z.shape, dtype='float32'))
             loss = (negative_log_likelihood + kld) / args.batch_size - logdet
             loss = loss / denom
 
