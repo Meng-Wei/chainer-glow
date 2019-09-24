@@ -138,7 +138,7 @@ def main():
                 self.encoder = encoder
         
         def forward(self):
-            return self.encoder.forward_step(ori_x + self.b)
+            return self.encoder.forward_step(cupy.array(ori_x) + self.b)
 
 
     epsilon = eps(ori_x)
