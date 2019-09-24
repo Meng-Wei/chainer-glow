@@ -151,7 +151,7 @@ def main():
         def forward(self, x):
             cur_x = cf.add(x, self.b)
             z, log_det = self.encoder.forward_step(cur_x)
-            return z, log_det, cf.batch_l2_norm_squared(self.b)
+            return z, log_det, cf.batch_l2_norm_squared(self.b), self.b
 
 
     epsilon = eps(ori_x.shape, encoder)
@@ -163,13 +163,14 @@ def main():
 
     training_step = 0
     zs = []
+    bs = []
+
     for iteration in range(args.total_iteration):
         start_time = time.time()
 
         # ori_x += epsilon
         # z, fw_ldt = encoder.forward_step(ori_x)
-        z, fw_ldt, b_norm = epsilon.forward(ori_x)
-        print(b_norm.shape)
+        z, fw_ldt, b_norm, b = epsilon.forward(ori_x)
 
         logpZ = 0
         for (zi, mean, ln_var) in z:
@@ -183,6 +184,8 @@ def main():
         training_step += 1
 
         zs.append(merge_factorized_z(z))
+        bs.append(b)
+
         printr(
             "Iteration {}: Batch {} - loss: {:.8f} - logpZ: {:.8f} - log_det: {:.8f}".
             format(
@@ -194,6 +197,7 @@ def main():
         )
     
     np.save('z.npy', zs)
+    np.save('b.npy', bs)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
