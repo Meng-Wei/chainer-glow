@@ -138,9 +138,9 @@ def main():
                 self.encoder = encoder
         
         def forward(self):
-            print(type(cupy.array(ori_x)))
-            print(type(self.b))
-            return self.encoder.forward_step(cupy.array(ori_x) + self.b)
+            cur_x = ori_x + self.b
+            z, log_det = self.encoder.forward_step(cur_x)
+            return z, log_det
 
 
     epsilon = eps(ori_x)
