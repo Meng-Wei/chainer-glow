@@ -132,10 +132,14 @@ def main():
     class eps(chainer.Link):
         def __init__(self, n_in):
             super().__init__()
-
             with self.init_scope():
                 self.b = chainer.Parameter(
-                    initializers.Normal(), n_in.shape)
+                    initializers.Normal(), ori_x.shape)
+                self.encoder = encoder
+        
+        def forward(self, x):
+            return self.encoder.forward_step(x + self.b)
+
 
     epsilon = eps(ori_x)
     optimizer = Optimizer(epsilon)
@@ -145,8 +149,9 @@ def main():
     for iteration in range(args.total_iteration):
         start_time = time.time()
 
-        ori_x += epsilon
-        z, fw_ldt = encoder.forward_step(ori_x)
+        # ori_x += epsilon
+        # z, fw_ldt = encoder.forward_step(ori_x)
+        z, fw_ldt = epsilon.forward(ori_x)
 
         logpZ = 0
         for (zi, mean, ln_var) in z:
