@@ -166,7 +166,7 @@ def main():
         for (zi, mean, ln_var) in z:
             logpZ += cf.gaussian_nll(zi, mean, ln_var)
         
-        loss = xp.linalg.norm(epsilon) + (logpZ - fw_ldt)
+        loss = xp.linalg.norm(epsilon.b) + (logpZ - fw_ldt)
         print('finish loss')
 
         epsilon.cleargrads()
