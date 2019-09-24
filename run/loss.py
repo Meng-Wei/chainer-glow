@@ -125,8 +125,9 @@ def main():
     # Load picture
     x = to_gpu(np.array(Image.open('bg/1.png')))
     x = preprocess(x, num_bins_x)
-    x = xp.array(xp.expand_dims(x, axis=0), dtype='float32')
+    x = xp.expand_dims(x, axis=0)
     ori_x = x + xp.random.uniform(0, 1.0 / num_bins_x, size=x.shape)
+    ori_x = xp.array(ori_x, dtype='float32')
 
     # Construct epsilon
     class eps(chainer.ChainList):
