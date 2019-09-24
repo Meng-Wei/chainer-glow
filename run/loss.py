@@ -15,10 +15,10 @@ import cupy
 import numpy as np
 from chainer.backends import cuda
 
+sys.path.append(".")
+sys.path.append("..")
 import glow
 
-sys.path.append("..")
-sys.path.append(os.path.join("..", ".."))
 from model import Glow, to_cpu, to_gpu
 from hyperparams import Hyperparameters
 from optimizer import Optimizer
