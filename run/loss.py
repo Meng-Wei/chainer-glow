@@ -144,7 +144,7 @@ def main():
         def forward(self, x):
             cur_x = cf.add(x, self.b)
             z, log_det = self.encoder.forward_step(cur_x)
-            return z, log_det, xp.linalg.norm(self.b)
+            return z, log_det, cf.batch_l2_norm_squared(self.b)
 
 
     epsilon = eps(ori_x.shape, encoder)
@@ -161,12 +161,13 @@ def main():
         # ori_x += epsilon
         # z, fw_ldt = encoder.forward_step(ori_x)
         z, fw_ldt, b_norm = epsilon.forward(ori_x)
+        print(b_norm.shape)
 
         logpZ = 0
         for (zi, mean, ln_var) in z:
             logpZ += cf.gaussian_nll(zi, mean, ln_var)
         
-        loss = b_norm + (logpZ - fw_ldt)
+        loss = b_norm[0] + (logpZ - fw_ldt)
         print('finish loss')
 
         epsilon.cleargrads()
