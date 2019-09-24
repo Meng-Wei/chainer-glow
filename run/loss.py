@@ -182,7 +182,7 @@ def main():
                 iteration + 1, 1,
                 loss,
                 logpZ,
-                fw_ldt
+                fw_ldt.data
             )
         )
 
