@@ -5,3 +5,6 @@ data/*
 # ignore
 .vscode
 build
+
+*/a.txt
+*/b.txt

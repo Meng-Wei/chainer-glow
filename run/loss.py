@@ -14,6 +14,7 @@ import chainer.functions as cf
 import cupy
 import numpy as np
 from chainer.backends import cuda
+from chainer import initializers
 
 sys.path.append(".")
 sys.path.append("..")
@@ -128,7 +129,15 @@ def main():
 
 
     # Construct epsilon
-    epsilon = xp.random.normal(size=x.shape)
+    class eps(chainer.Link):
+        def __init__(self, n_in):
+            super().__init__()
+
+            with self.init_scope():
+                self.b = chainer.Parameter(
+                    initializers.Normal(), n_in.shape)
+
+    epsilon = eps(ori_x)
     optimizer = Optimizer(epsilon)
     print('init finish')
 
