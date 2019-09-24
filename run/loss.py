@@ -125,7 +125,9 @@ def main():
     # Load picture
     x = to_gpu(np.array(Image.open('bg/1.png')))
     x = preprocess(x, num_bins_x)
+    print('pre x', x.shape)
     ori_x = x + xp.random.uniform(0, 1.0 / num_bins_x, size=x.shape)
+    print(ori_x.shape)
 
 
     # Construct epsilon
