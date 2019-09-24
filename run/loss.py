@@ -169,6 +169,7 @@ def main():
     loss_s = []
     logpZ_s = []
     logDet_s = []
+    j = 0
 
     for iteration in range(args.total_iteration):
         start_time = time.time()
@@ -206,17 +207,18 @@ def main():
             )
         )
 
-        if iteration % 10 == 0:
-            np.save('logs/z.npy', z_s)
-            np.save('logs/b.npy', b_s)
-            np.save('logs/loss.npy', loss_s)
-            np.save('logs/logpZ.npy', logpZ_s)
-            np.save('logs/logDet.npy', logDet_s)
+        if iteration % 100 == 0:
+            np.save('logs/'+str(j)+'z.npy', z_s)
+            np.save('logs/'+str(j)+'b.npy', b_s)
+            np.save('logs/'+str(j)+'loss.npy', loss_s)
+            np.save('logs/'+str(j)+'logpZ.npy', logpZ_s)
+            np.save('logs/'+str(j)+'logDet.npy', logDet_s)
             z_s = []
             b_s = []
             loss_s = []
             logpZ_s = []
             logDet_s = []
+            j += 1
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
