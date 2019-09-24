@@ -134,7 +134,7 @@ def main():
             super().__init__()
             with self.init_scope():
                 self.b = chainer.Parameter(
-                    initializers.Normal(), ori_x.shape)
+                    initializers.Normal(), n_in.shape)
                 self.encoder = encoder
         
         def forward(self, x):
@@ -151,7 +151,7 @@ def main():
 
         # ori_x += epsilon
         # z, fw_ldt = encoder.forward_step(ori_x)
-        z, fw_ldt = epsilon.forward(ori_x)
+        z, fw_ldt = epsilon.forward(xp.array(ori_x))
 
         logpZ = 0
         for (zi, mean, ln_var) in z:
