@@ -151,7 +151,7 @@ def main():
         def forward(self, x):
             cur_x = cf.add(x, self.b)
             z, log_det = self.encoder.forward_step(cur_x)
-            return z, log_det, cf.batch_l2_norm_squared(self.b), self.b
+            return z, log_det, cf.batch_l2_norm_squared(self.b), self.b*1
 
 
     epsilon = eps(ori_x.shape, encoder)
