@@ -129,21 +129,22 @@ def main():
 
 
     # Construct epsilon
-    class eps(chainer.Link):
-        def __init__(self, n_in):
+    class eps(chainer.ChainList):
+        def __init__(self, shape, glow_encoder):
             super().__init__()
+            self.encoder = glow_encoder
+
             with self.init_scope():
                 self.b = chainer.Parameter(
-                    initializers.Normal(), n_in.shape)
-                self.encoder = encoder
+                    initializers.Normal(), shape)
         
-        def forward(self):
-            cur_x = ori_x + self.b
+        def forward(self, x):
+            cur_x = cf.add(x, self.b)
             z, log_det = self.encoder.forward_step(cur_x)
             return z, log_det
 
 
-    epsilon = eps(ori_x)
+    epsilon = eps(ori_x.shape, encoder)
     optimizer = Optimizer(epsilon)
     print('init finish')
 
@@ -153,7 +154,7 @@ def main():
 
         # ori_x += epsilon
         # z, fw_ldt = encoder.forward_step(ori_x)
-        z, fw_ldt = epsilon.forward()
+        z, fw_ldt = epsilon.forward(ori_x)
 
         logpZ = 0
         for (zi, mean, ln_var) in z:
