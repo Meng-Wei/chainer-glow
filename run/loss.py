@@ -226,6 +226,6 @@ if __name__ == "__main__":
     parser.add_argument('--ckpt', type=str, default='logs')
     # parser.add_argument("--dataset-path", "-dataset", type=str, required=False)
     # parser.add_argument("--dataset-format", "-ext", type=str, required=True)
-    parser.add_argument("--total-iteration", "-iter", type=int, default=11)
+    parser.add_argument("--total-iteration", "-iter", type=int, default=1000)
     args = parser.parse_args()
     main()
