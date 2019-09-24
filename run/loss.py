@@ -138,6 +138,8 @@ def main():
                 self.encoder = encoder
         
         def forward(self):
+            print(type(cupy.array(ori_x)))
+            print(type(self.b))
             return self.encoder.forward_step(cupy.array(ori_x) + self.b)
 
 
