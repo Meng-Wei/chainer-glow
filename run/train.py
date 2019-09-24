@@ -180,6 +180,7 @@ def main():
 
         for batch_index, data_indices in enumerate(iterator):
             x = to_gpu(dataset[data_indices])
+            print('x shape', x.shape)
             x += xp.random.uniform(0, 1.0 / num_bins_x, size=x.shape)
 
             denom = math.log(2.0) * num_pixels
