@@ -136,7 +136,7 @@ def main():
 
             with self.init_scope():
                 self.b = chainer.Parameter(
-                    initializers.Normal(), shape)
+                    initializers.Normal(dtype='float64'), shape)
         
         def forward(self, x):
             cur_x = cf.add(x, self.b)
@@ -147,7 +147,7 @@ def main():
     epsilon = eps(ori_x.shape, encoder)
     if using_gpu:
         epsilon.to_gpu()
-        
+
     optimizer = Optimizer(epsilon)
     print('init finish')
 
