@@ -124,7 +124,8 @@ def main():
 
     # Load picture
     x = to_gpu(np.array(Image.open('bg/1.png')))
-    x = preprocess(x, num_bins_x).reshape(1, x.shape[0], x.shape[1], x.shape[2])
+    x = preprocess(x, num_bins_x)
+    x = xp.expand_dims(x, axis=0)
     print(x.shape)
     ori_x = x + xp.random.uniform(0, 1.0 / num_bins_x, size=x.shape)
 
