@@ -173,8 +173,10 @@ def main():
         z, fw_ldt, b_norm, b = epsilon.forward(ori_x)
 
         logpZ = 0
+        ez = []
         for (zi, mean, ln_var) in z:
             logpZ += cf.gaussian_nll(zi, mean, ln_var)
+            ez.append(zi.data.reshape(-1,))
         
         loss = b_norm[0] + (logpZ - fw_ldt)
 
@@ -183,7 +185,7 @@ def main():
         optimizer.update(training_step)
         training_step += 1
 
-        zs.append(merge_factorized_z(z))
+        zs.append(np.concatenate(ez).get())
         bs.append(b)
 
         printr(
