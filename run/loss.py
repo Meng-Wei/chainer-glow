@@ -162,6 +162,7 @@ def main():
     print('init finish')
 
     training_step = 0
+    zs = []
     for iteration in range(args.total_iteration):
         start_time = time.time()
 
@@ -175,14 +176,13 @@ def main():
             logpZ += cf.gaussian_nll(zi, mean, ln_var)
         
         loss = b_norm[0] + (logpZ - fw_ldt)
-        print('finish loss')
 
         epsilon.cleargrads()
         loss.backward()
         optimizer.update(training_step)
         training_step += 1
-        print('finish training')
 
+        zs.append(merge_factorized_z(z))
         printr(
             "Iteration {}: Batch {} - loss: {:.8f} - logpZ: {:.8f} - log_det: {:.8f}".
             format(
@@ -192,6 +192,8 @@ def main():
                 _float(fw_ldt)
             )
         )
+    
+    np.save('z.npy', zs)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
