@@ -186,6 +186,10 @@ def main():
         
         loss = b_norm[0] + (logpZ - fw_ldt)
 
+        print("loss", _float(loss), loss.data)
+        print('logpZ', _float(logpZ), logpZ.data)
+        print('logDet', _float(fw_ldt), fw_ldt)
+
         epsilon.cleargrads()
         loss.backward()
         optimizer.update(training_step)
@@ -207,18 +211,18 @@ def main():
             )
         )
 
-        if iteration % 100 == 0:
-            np.save('logs/'+str(j)+'z.npy', z_s)
-            np.save('logs/'+str(j)+'b.npy', b_s)
-            np.save('logs/'+str(j)+'loss.npy', loss_s)
-            np.save('logs/'+str(j)+'logpZ.npy', logpZ_s)
-            np.save('logs/'+str(j)+'logDet.npy', logDet_s)
-            z_s = []
-            b_s = []
-            loss_s = []
-            logpZ_s = []
-            logDet_s = []
-            j += 1
+        # if iteration % 100 == 123:
+        #     np.save('logs/'+str(j)+'z.npy', z_s)
+        #     np.save('logs/'+str(j)+'b.npy', b_s)
+        #     np.save('logs/'+str(j)+'loss.npy', loss_s)
+        #     np.save('logs/'+str(j)+'logpZ.npy', logpZ_s)
+        #     np.save('logs/'+str(j)+'logDet.npy', logDet_s)
+        #     z_s = []
+        #     b_s = []
+        #     loss_s = []
+        #     logpZ_s = []
+        #     logDet_s = []
+        #     j += 1
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -228,6 +232,6 @@ if __name__ == "__main__":
     parser.add_argument('--ckpt', type=str, default='logs')
     # parser.add_argument("--dataset-path", "-dataset", type=str, required=False)
     # parser.add_argument("--dataset-format", "-ext", type=str, required=True)
-    parser.add_argument("--total-iteration", "-iter", type=int, default=1000)
+    parser.add_argument("--total-iteration", "-iter", type=int, default=10)
     args = parser.parse_args()
     main()
