@@ -176,6 +176,9 @@ def main():
         training_step += 1
         print('finish training')
 
+        print(type(logpZ))
+        print(type(fw_ldt))
+        print(type(fw_ldt.data))
         printr(
             "Iteration {}: Batch {} - loss: {:.8f} - logpZ: {:.8f} - log_det: {:.8f}".
             format(
