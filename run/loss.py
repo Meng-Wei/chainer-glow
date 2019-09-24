@@ -139,14 +139,15 @@ def main():
                     initializers.Normal(), shape)
         
         def forward(self, x):
-            print(x.shape)
-            print(self.b.shape)
             cur_x = cf.add(x, self.b)
             z, log_det = self.encoder.forward_step(cur_x)
             return z, log_det
 
 
     epsilon = eps(ori_x.shape, encoder)
+    if using_gpu:
+        epsilon.to_gpu()
+        
     optimizer = Optimizer(epsilon)
     print('init finish')
 
