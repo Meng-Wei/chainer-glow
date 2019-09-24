@@ -137,8 +137,8 @@ def main():
                     initializers.Normal(), n_in.shape)
                 self.encoder = encoder
         
-        def forward(self, x):
-            return self.encoder.forward_step(x + self.b)
+        def forward(self):
+            return self.encoder.forward_step(ori_x + self.b)
 
 
     epsilon = eps(ori_x)
@@ -151,7 +151,7 @@ def main():
 
         # ori_x += epsilon
         # z, fw_ldt = encoder.forward_step(ori_x)
-        z, fw_ldt = epsilon.forward(xp.array(ori_x))
+        z, fw_ldt = epsilon.forward()
 
         logpZ = 0
         for (zi, mean, ln_var) in z:
