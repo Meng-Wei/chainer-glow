@@ -196,8 +196,9 @@ def main():
                 if args.regularize_z:
                     kld += cf.gaussian_kl_divergence(mean, ln_var)
                 print(zi.shape)
-                factor_z.append(zi.data.reshape(zi[0], -1))
+                factor_z.append(zi.data.reshape(zi.shape[0], -1))
             factor_z = xp.concatenate(factor_z)
+            print(factor_z.shape)
             negative_log_likelihood += cf.gaussian_nll(factor_z, 0, 0)
             loss = (negative_log_likelihood + kld) / args.batch_size - logdet
             loss = loss / denom
