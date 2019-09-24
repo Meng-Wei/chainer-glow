@@ -151,7 +151,7 @@ def main():
         def forward(self, x):
             cur_x = cf.add(x, self.b)
             z, log_det = self.encoder.forward_step(cur_x)
-            return z, log_det, cf.batch_l2_norm_squared(self.b), self.b*1
+            return z, log_det, cf.batch_l2_norm_squared(self.b), cur_x
 
 
     epsilon = eps(ori_x.shape, encoder)
@@ -190,7 +190,9 @@ def main():
         training_step += 1
 
         z_s.append(np.concatenate(ez).get())
-        b_s.append(b.get())
+        print(type(z_s[0]))
+        b_s.append(cupy.asnumpy(b.data))
+        print(type(b_s[0]))
         loss_s.append(_float(loss))
         logpZ_s.append(_float(logpZ))
         logDet_s.append(_float(fw_ldt))
