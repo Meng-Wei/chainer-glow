@@ -163,14 +163,15 @@ def main():
 
     training_step = 0
 
+
+    z_s = []
+    b_s = []
+    loss_s = []
+    logpZ_s = []
+    logDet_s = []
+
     for iteration in range(args.total_iteration):
         start_time = time.time()
-        z_s = []
-        b_s = []
-        loss_s = []
-        logpZ_s = []
-        logDet_s = []
-
 
         # ori_x += epsilon
         # z, fw_ldt = encoder.forward_step(ori_x)
@@ -190,9 +191,7 @@ def main():
         training_step += 1
 
         z_s.append(np.concatenate(ez).get())
-        print(type(z_s[0]))
         b_s.append(cupy.asnumpy(b.data))
-        print(type(b_s[0]))
         loss_s.append(_float(loss))
         logpZ_s.append(_float(logpZ))
         logDet_s.append(_float(fw_ldt))
@@ -213,11 +212,11 @@ def main():
             np.save('logs/loss.npy', loss_s)
             np.save('logs/logpZ.npy', logpZ_s)
             np.save('logs/logDet.npy', logDet_s)
-        z_s = []
-        b_s = []
-        loss_s = []
-        logpZ_s = []
-        logDet_s = []
+            z_s = []
+            b_s = []
+            loss_s = []
+            logpZ_s = []
+            logDet_s = []
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
