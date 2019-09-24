@@ -139,7 +139,9 @@ def main():
                     initializers.Normal(), shape)
         
         def forward(self, x):
-            cur_x = cf.add(x, cupy.array(self.b))
+            print(x.shape)
+            print(self.b.shape)
+            cur_x = cf.add(x, self.b)
             z, log_det = self.encoder.forward_step(cur_x)
             return z, log_det
 
