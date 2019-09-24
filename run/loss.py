@@ -62,6 +62,13 @@ def printr(string):
     sys.stdout.write(string)
     sys.stdout.write("\r")
 
+def _float(v):
+    if isinstance(v, float):
+        return v
+    if isinstance(v, chainer.Variable):
+        return float(v.data)
+    return float(v)
+
 def main():
     try:
         os.mkdir(args.ckpt)
@@ -176,16 +183,13 @@ def main():
         training_step += 1
         print('finish training')
 
-        print(type(logpZ))
-        print(type(fw_ldt))
-        print(type(fw_ldt.data))
         printr(
             "Iteration {}: Batch {} - loss: {:.8f} - logpZ: {:.8f} - log_det: {:.8f}".
             format(
                 iteration + 1, 1,
-                loss,
-                logpZ,
-                fw_ldt.data
+                _float(loss),
+                _float(logpZ),
+                _float(fw_ldt)
             )
         )
 
