@@ -6,6 +6,8 @@ data/*
 .vscode
 build
 
-*/a.txt
-*/b.txt
+*a.txt
+*b.txt
+*.DS_Store
+logs/
 bg/*

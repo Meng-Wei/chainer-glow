@@ -95,13 +95,13 @@ def main():
         encoder.to_gpu()
 
 
-    ori_x = []
-    fw_logdet = []
-    enc_z = []
-    logpZ = []
-    logpZ2 = []
-    rev_x = []
-    bk_logdet = []
+    # ori_x = []
+    # fw_logdet = []
+    # enc_z = []
+    # logpZ = []
+    # logpZ2 = []
+    # rev_x = []
+    # bk_logdet = []
 
     pro_ori_x = []
     pro_enc_z = []
@@ -114,33 +114,34 @@ def main():
 
     with chainer.no_backprop_mode() and encoder.reverse() as decoder:
         i = 0
+        j = 0
         for data_indices in iterator:
             i += 1
             x = to_gpu(dataset[data_indices]) # 1x3x64x64
 
-            x_img = make_uint8(x[0], num_bins_x)
-            ori_x.append(x_img) # 64x64x3
-            factorized_z_distribution, fw_ldt = encoder.forward_step(x)
-            fw_logdet.append(cupy.asnumpy(fw_ldt.data))
+            # x_img = make_uint8(x[0], num_bins_x)
+            # ori_x.append(x_img) # 64x64x3
+            # factorized_z_distribution, fw_ldt = encoder.forward_step(x)
+            # fw_logdet.append(cupy.asnumpy(fw_ldt.data))
 
-            factor_z = []
-            ez = []
-            nll = 0
-            for (zi, mean, ln_var) in factorized_z_distribution:
-                nll += cf.gaussian_nll(zi, mean, ln_var)
-                factor_z.append(zi.data)
-                ez.append(zi.data.reshape(-1,))
+            # factor_z = []
+            # ez = []
+            # nll = 0
+            # for (zi, mean, ln_var) in factorized_z_distribution:
+            #     nll += cf.gaussian_nll(zi, mean, ln_var)
+            #     factor_z.append(zi.data)
+            #     ez.append(zi.data.reshape(-1,))
             
-            ez = np.concatenate(ez)
-            enc_z.append(ez.get())
-            logpZ.append(cupy.asnumpy(nll.data))
-            logpZ2.append(cupy.asnumpy(
-                cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data ))
+            # ez = np.concatenate(ez)
+            # enc_z.append(ez.get())
+            # logpZ.append(cupy.asnumpy(nll.data))
+            # logpZ2.append(cupy.asnumpy(
+            #     cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data ))
 
-            rx, bk_ldt = decoder.reverse_step(factor_z)
-            rx_img = make_uint8(rx.data[0], num_bins_x)
-            rev_x.append(rx_img)
-            bk_logdet.append(cupy.asnumpy(bk_ldt.data))
+            # rx, bk_ldt = decoder.reverse_step(factor_z)
+            # rx_img = make_uint8(rx.data[0], num_bins_x)
+            # rev_x.append(rx_img)
+            # bk_logdet.append(cupy.asnumpy(bk_ldt.data))
 
             # Pre-process
             x += xp.random.uniform(0, 1.0 / num_bins_x, size=x.shape)
@@ -169,17 +170,18 @@ def main():
             pro_bk_logdet.append(cupy.asnumpy(bk_ldt.data))
 
             if i % 100 == 0:
-                np.save(str(i)+'/ori_x.npy', ori_x)
-                fw_logdet = cupy.asnumpy(fw_logdet)
-                np.save(str(i)+'/fw_logdet.npy', fw_logdet)
-                np.save(str(i)+'/enc_z.npy', enc_z)
-                logpZ = np.array(logpZ)
-                np.save(str(i)+'/logpZ.npy', logpZ)
-                logpZ2 = np.array(logpZ2)
-                np.save(str(i)+'/logpZ2.npy', logpZ2)
-                np.save(str(i)+'/rev_x.npy', rev_x)
-                bk_logdet = np.array(bk_logdet)
-                np.save(str(i)+'/bk_logdet.npy', bk_logdet)
+                j += 1
+                # np.save(str(i)+'/ori_x.npy', ori_x)
+                # fw_logdet = cupy.asnumpy(fw_logdet)
+                # np.save(str(i)+'/fw_logdet.npy', fw_logdet)
+                # np.save(str(i)+'/enc_z.npy', enc_z)
+                # logpZ = np.array(logpZ)
+                # np.save(str(i)+'/logpZ.npy', logpZ)
+                # logpZ2 = np.array(logpZ2)
+                # np.save(str(i)+'/logpZ2.npy', logpZ2)
+                # np.save(str(i)+'/rev_x.npy', rev_x)
+                # bk_logdet = np.array(bk_logdet)
+                # np.save(str(i)+'/bk_logdet.npy', bk_logdet)
 
                 np.save(str(i)+'/pro_ori_x.npy', pro_ori_x)
                 pro_fw_logdet = np.array(pro_fw_logdet)
@@ -193,13 +195,13 @@ def main():
                 pro_bk_logdet = np.array(pro_bk_logdet)
                 np.save(str(i)+'/pro_bk_logdet.npy', pro_bk_logdet)
 
-                ori_x = []
-                fw_logdet = []
-                enc_z = []
-                logpZ = []
-                logpZ2 = []
-                rev_x = []
-                bk_logdet = []
+                # ori_x = []
+                # fw_logdet = []
+                # enc_z = []
+                # logpZ = []
+                # logpZ2 = []
+                # rev_x = []
+                # bk_logdet = []
 
                 pro_ori_x = []
                 pro_enc_z = []
@@ -208,6 +210,9 @@ def main():
                 pro_bk_logdet = []
                 pro_logpZ = []
                 pro_logpZ2 = []
+                if j == 1:
+                    return
+            
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
