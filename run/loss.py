@@ -15,6 +15,8 @@ import cupy
 import numpy as np
 from chainer.backends import cuda
 from chainer import initializers
+from chainer.serializers import load_hdf5, save_hdf5
+import uuid
 
 sys.path.append(".")
 sys.path.append("..")
@@ -152,6 +154,15 @@ def main():
             cur_x = cf.add(x, self.b)
             z, log_det = self.encoder.forward_step(cur_x)
             return z, log_det, cf.batch_l2_norm_squared(self.b), self.b * 1
+        def filename(self):
+            return "l1_model.hdf5"
+        def save(self, path):
+            self.save_parameter(path, self.filename, self)
+        def save_parameter(self, path, filename, params):
+            tmp_filename = str(uuid.uuid4())
+            tmp_filepath = os.path.join(path, tmp_filename)
+            save_hdf5(tmp_filepath, params)
+            os.rename(tmp_filepath, os.path.join(path, filename))
 
 
     epsilon = eps(ori_x.shape, encoder)
@@ -215,7 +226,7 @@ def main():
 
         
 
-        if iteration % 100 == 99:
+        if iteration % 10 == 9:
             np.save('logs/'+str(j)+'z.npy', z_s)
             np.save('logs/'+str(j)+'b.npy', b_s)
             np.save('logs/'+str(j)+'loss.npy', loss_s)
