@@ -151,7 +151,7 @@ def main():
         def forward(self, x):
             cur_x = cf.add(x, self.b)
             z, log_det = self.encoder.forward_step(cur_x)
-            return z, log_det, cf.batch_l2_norm_squared(self.b), cur_x
+            return z, log_det, cf.batch_l2_norm_squared(self.b), self.b * 1
 
 
     epsilon = eps(ori_x.shape, encoder)
@@ -162,7 +162,6 @@ def main():
     print('init finish')
 
     training_step = 0
-
 
     z_s = []
     b_s = []
@@ -176,15 +175,18 @@ def main():
 
         # ori_x += epsilon
         # z, fw_ldt = encoder.forward_step(ori_x)
-        z, fw_ldt, b_norm, b = epsilon.forward(ori_x)
+        z, fw_ldt, b_l2norm, b = epsilon.forward(ori_x)
 
-        logpZ = 0
+        # logpZ = 0
         ez = []
         for (zi, mean, ln_var) in z:
-            logpZ += cf.gaussian_nll(zi, mean, ln_var)
+            # logpZ += cf.gaussian_nll(zi, mean, ln_var)
             ez.append(zi.data.reshape(-1,))
-        
-        loss = b_norm[0] + (logpZ - fw_ldt)
+            
+        ez = np.concatenate(ez).get()
+        logpZ = cupy.asnumpy(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data)
+
+        loss = b_l2norm[0] + (logpZ - fw_ldt)
 
         print("loss", _float(loss), loss.data)
         print('logpZ', _float(logpZ), logpZ.data)
@@ -195,7 +197,7 @@ def main():
         optimizer.update(training_step)
         training_step += 1
 
-        z_s.append(np.concatenate(ez).get())
+        z_s.append(cupy.asnumpy(ez))
         b_s.append(cupy.asnumpy(b.data))
         loss_s.append(_float(loss))
         logpZ_s.append(_float(logpZ))
