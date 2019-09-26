@@ -192,7 +192,7 @@ def main():
         # logpZ = cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data
 
         # loss = b_l2norm[0] + (logpZ - fw_ldt)
-        loss = xp.linalg.norm(b.data.reshape(b.data.shape[0], -1), ord=1) + (logpZ - fw_ldt)
+        loss = xp.linalg.norm(b.data.reshape(-1), ord='inf') + (logpZ - fw_ldt)
 
         # print("loss", _float(loss), loss.data)
         # print('logpZ', _float(logpZ), logpZ.data)
