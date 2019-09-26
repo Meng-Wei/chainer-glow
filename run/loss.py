@@ -124,13 +124,6 @@ def main():
     if using_gpu:
         encoder.to_gpu()
 
-    images_list = []
-    enc_z_list = []
-    log_det_list = []
-    logpZ_list = []
-    logpZ2_list = []
-
-
     # Load picture
     x = to_gpu(np.array(Image.open('bg/1.png')))
     x = preprocess(x, hyperparams.num_bits_x)
@@ -162,7 +155,6 @@ def main():
             tmp_filepath = os.path.join(path, tmp_filename)
             save_hdf5(tmp_filepath, params)
             os.rename(tmp_filepath, os.path.join(path, filename))
-
 
     epsilon = eps(ori_x.shape, encoder)
     if using_gpu:
@@ -196,8 +188,8 @@ def main():
             ez.append(zi.data.reshape(-1,))
             
         ez = np.concatenate(ez)
-        logpZ = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
-        # logpZ = cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data
+        # logpZ = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
+        logpZ = cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data
 
         loss = b_l2norm[0] + (logpZ - fw_ldt)
 
@@ -227,14 +219,12 @@ def main():
             )
         )
 
-        
-
         if iteration % 100 == 99:
-            np.save('normallogs/'+str(j)+'z.npy', z_s)
-            np.save('normallogs/'+str(j)+'b.npy', b_s)
-            np.save('normallogs/'+str(j)+'loss.npy', loss_s)
-            np.save('normallogs/'+str(j)+'logpZ.npy', logpZ_s)
-            np.save('normallogs/'+str(j)+'logDet.npy', logDet_s)
+            np.save('mean_logs/'+str(j)+'z.npy', z_s)
+            np.save('mean_logs/'+str(j)+'b.npy', b_s)
+            np.save('mean_logs/'+str(j)+'loss.npy', loss_s)
+            np.save('mean_logs/'+str(j)+'logpZ.npy', logpZ_s)
+            np.save('mean_logs/'+str(j)+'logDet.npy', logDet_s)
             z_s = []
             b_s = []
             loss_s = []
@@ -248,7 +238,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--snapshot-path", "-snapshot", type=str, default='/home/data1/meng/chainer/snapshot_64')
     parser.add_argument("--gpu-device", "-gpu", type=int, default=1)
-    parser.add_argument('--ckpt', type=str, default='normallogs')
+    parser.add_argument('--ckpt', type=str, default='mean_logs')
     # parser.add_argument("--dataset-path", "-dataset", type=str, required=False)
     # parser.add_argument("--dataset-format", "-ext", type=str, required=True)
     parser.add_argument("--total-iteration", "-iter", type=int, default=10)
