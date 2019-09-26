@@ -172,6 +172,7 @@ def main():
     print('init finish')
 
     training_step = 0
+    num_pixels = 3 * hyperparams.image_size[0] * hyperparams.image_size[1]
 
     z_s = []
     b_s = []
@@ -185,7 +186,8 @@ def main():
 
         # ori_x += epsilon
         # z, fw_ldt = encoder.forward_step(ori_x)
-        z, fw_ldt, b_l2norm, b = epsilon.forward(ori_x)
+        z, fw_ldt, b_l2norm, b = epsilon.forward(ori_x)            
+        fw_ldt -= math.log(num_bins_x) * num_pixels
 
         # logpZ = 0
         ez = []
@@ -215,12 +217,13 @@ def main():
         logDet_s.append(_float(fw_ldt))
 
         printr(
-            "Iteration {}: Batch {} - loss: {:.8f} - logpZ: {:.8f} - log_det: {:.8f}\n".
+            "Iteration {}: loss: {:.6f} - logpZ: {:.6f} - log_det: {:.6f} - logpX: {:.6f}\n".
             format(
-                iteration + 1, 1,
+                iteration + 1,
                 _float(loss),
                 _float(logpZ),
-                _float(fw_ldt)
+                _float(fw_ldt),
+                _float(logpZ) - _float(fw_ldt)
             )
         )
 
