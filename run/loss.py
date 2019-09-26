@@ -161,7 +161,8 @@ def main():
         def forward(self, x):
             cur_x = cf.add(x, self.b)
             z, log_det = self.encoder.forward_step(cur_x)
-            return z, log_det, cf.batch_l2_norm_squared(self.b), self.b * 1
+            # return z, log_det, cf.batch_l2_norm_squared(self.b), self.b * 1
+            return z, log_det, cf.sum(cf.absolute(self.b)), self.b * 1
         def save(self, path):
             filename = 'l1_model.hdf5'
             self.save_parameter(path, filename, self)
@@ -202,11 +203,11 @@ def main():
             ez.append(zi.data.reshape(-1,))
             
         ez = np.concatenate(ez)
-        logpZ = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
-        # logpZ = cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data
+        # logpZ = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
+        logpZ = cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data
 
-        # loss = b_l2norm[0] + (logpZ - fw_ldt)
-        loss = xp.linalg.norm(b.data.reshape(-1), ord=xp.inf) + (logpZ - fw_ldt)
+        loss = b_l2norm[0] + (logpZ - fw_ldt)
+        # loss = xp.linalg.norm(b.data.reshape(-1), ord=xp.inf) + (logpZ - fw_ldt)
 
         # print("loss", _float(loss), loss.data)
         # print('logpZ', _float(logpZ), logpZ.data)
