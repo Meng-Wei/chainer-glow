@@ -128,19 +128,19 @@ def main():
     # Load picture
     x = to_gpu(np.array(Image.open('bg/1.png')))
     x = preprocess(x, hyperparams.num_bits_x)
-    x = xp.array(x, dtype='float32')
-    x = xp.expand_dims(x, axis=0)
+    # x = xp.array(x, dtype='float32')
+    # x = xp.expand_dims(x, axis=0)
 
-    z, fw_ldt = encoder.forward_step(x)        
-    fw_ldt -= math.log(num_bins_x) * num_pixels
-    ez = []
-    for (zi, mean, ln_var) in z:
-        # logpZ += cf.gaussian_nll(zi, mean, ln_var)
-        ez.append(zi.data.reshape(-1,))
-    ez = np.concatenate(ez)
-    logpZ = cf.gaussian_nll(ez, xp.zeros(ez.shape, dtype='float32'), xp.zeros(ez.shape, dtype='float32')).data
+    # z, fw_ldt = encoder.forward_step(x)        
+    # fw_ldt -= math.log(num_bins_x) * num_pixels
+    # ez = []
+    # for (zi, mean, ln_var) in z:
+    #     # logpZ += cf.gaussian_nll(zi, mean, ln_var)
+    #     ez.append(zi.data.reshape(-1,))
+    # ez = np.concatenate(ez)
+    # logpZ = cf.gaussian_nll(ez, xp.zeros(ez.shape, dtype='float32'), xp.zeros(ez.shape, dtype='float32')).data
 
-    print(fw_ldt, logpZ)
+    # print(fw_ldt, logpZ)
 
     x = xp.expand_dims(x, axis=0)
     ori_x = x + xp.random.uniform(0, 1.0 / num_bins_x, size=x.shape)
