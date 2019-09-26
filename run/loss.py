@@ -137,7 +137,7 @@ def main():
         # logpZ += cf.gaussian_nll(zi, mean, ln_var)
         ez.append(zi.data.reshape(-1,))
     ez = np.concatenate(ez)
-    logpZ = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
+    logpZ = cf.gaussian_nll(ez, xp.zeros(ez.shape, dtype='float32'), xp.zeros(ez.shape, dtype='float32')).data
 
     print(fw_ldt, logpZ)
 
