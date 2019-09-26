@@ -225,7 +225,7 @@ def main():
 
         
 
-        if iteration % 10 == 9:
+        if iteration % 100 == 99:
             np.save('logs/'+str(j)+'z.npy', z_s)
             np.save('logs/'+str(j)+'b.npy', b_s)
             np.save('logs/'+str(j)+'loss.npy', loss_s)
