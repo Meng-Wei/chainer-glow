@@ -188,9 +188,9 @@ def main():
 
         loss = b_l2norm[0] + (logpZ - fw_ldt)
 
-        print("loss", _float(loss), loss.data)
-        print('logpZ', _float(logpZ), logpZ.data)
-        print('logDet', _float(fw_ldt), fw_ldt)
+        # print("loss", _float(loss), loss.data)
+        # print('logpZ', _float(logpZ), logpZ.data)
+        # print('logDet', _float(fw_ldt), fw_ldt)
 
         epsilon.cleargrads()
         loss.backward()
@@ -213,18 +213,21 @@ def main():
             )
         )
 
-        # if iteration % 100 == 123:
-        #     np.save('logs/'+str(j)+'z.npy', z_s)
-        #     np.save('logs/'+str(j)+'b.npy', b_s)
-        #     np.save('logs/'+str(j)+'loss.npy', loss_s)
-        #     np.save('logs/'+str(j)+'logpZ.npy', logpZ_s)
-        #     np.save('logs/'+str(j)+'logDet.npy', logDet_s)
-        #     z_s = []
-        #     b_s = []
-        #     loss_s = []
-        #     logpZ_s = []
-        #     logDet_s = []
-        #     j += 1
+        
+
+        if iteration % 100 == 99:
+            np.save('logs/'+str(j)+'z.npy', z_s)
+            np.save('logs/'+str(j)+'b.npy', b_s)
+            np.save('logs/'+str(j)+'loss.npy', loss_s)
+            np.save('logs/'+str(j)+'logpZ.npy', logpZ_s)
+            np.save('logs/'+str(j)+'logDet.npy', logDet_s)
+            z_s = []
+            b_s = []
+            loss_s = []
+            logpZ_s = []
+            logDet_s = []
+            j += 1
+            epsilon.save(args.ckpt)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
