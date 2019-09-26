@@ -215,7 +215,7 @@ def main():
         logDet_s.append(_float(fw_ldt))
 
         printr(
-            "Iteration {}: Batch {} - loss: {:.8f} - logpZ: {:.8f} - log_det: {:.8f}".
+            "Iteration {}: Batch {} - loss: {:.8f} - logpZ: {:.8f} - log_det: {:.8f}\n".
             format(
                 iteration + 1, 1,
                 _float(loss),
