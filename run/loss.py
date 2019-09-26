@@ -191,7 +191,8 @@ def main():
         # logpZ = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
         logpZ = cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data
 
-        loss = b_l2norm[0] + (logpZ - fw_ldt)
+        # loss = b_l2norm[0] + (logpZ - fw_ldt)
+        loss = xp.linalg.norm(b.data, ord=1) + (logpZ - fw_ldt)
 
         # print("loss", _float(loss), loss.data)
         # print('logpZ', _float(logpZ), logpZ.data)
@@ -220,11 +221,11 @@ def main():
         )
 
         if iteration % 100 == 99:
-            np.save('mean_logs/'+str(j)+'z.npy', z_s)
-            np.save('mean_logs/'+str(j)+'b.npy', b_s)
-            np.save('mean_logs/'+str(j)+'loss.npy', loss_s)
-            np.save('mean_logs/'+str(j)+'logpZ.npy', logpZ_s)
-            np.save('mean_logs/'+str(j)+'logDet.npy', logDet_s)
+            np.save(args.ckpt + '/'+str(j)+'z.npy', z_s)
+            np.save(args.ckpt + '/'+str(j)+'b.npy', b_s)
+            np.save(args.ckpt + '/'+str(j)+'loss.npy', loss_s)
+            np.save(args.ckpt + '/'+str(j)+'logpZ.npy', logpZ_s)
+            np.save(args.ckpt + '/'+str(j)+'logDet.npy', logDet_s)
             z_s = []
             b_s = []
             loss_s = []
@@ -238,7 +239,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--snapshot-path", "-snapshot", type=str, default='/home/data1/meng/chainer/snapshot_64')
     parser.add_argument("--gpu-device", "-gpu", type=int, default=1)
-    parser.add_argument('--ckpt', type=str, default='mean_logs')
+    parser.add_argument('--ckpt', type=str, default='mean_logs_l1')
     # parser.add_argument("--dataset-path", "-dataset", type=str, required=False)
     # parser.add_argument("--dataset-format", "-ext", type=str, required=True)
     parser.add_argument("--total-iteration", "-iter", type=int, default=10)
