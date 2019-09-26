@@ -183,7 +183,7 @@ def main():
             # logpZ += cf.gaussian_nll(zi, mean, ln_var)
             ez.append(zi.data.reshape(-1,))
             
-        ez = np.concatenate(ez).get()
+        ez = np.concatenate(ez)
         logpZ = cupy.asnumpy(cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data)
 
         loss = b_l2norm[0] + (logpZ - fw_ldt)
@@ -197,7 +197,7 @@ def main():
         optimizer.update(training_step)
         training_step += 1
 
-        z_s.append(cupy.asnumpy(ez))
+        z_s.append(ez.get())
         b_s.append(cupy.asnumpy(b.data))
         loss_s.append(_float(loss))
         logpZ_s.append(_float(logpZ))
