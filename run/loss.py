@@ -154,10 +154,9 @@ def main():
             cur_x = cf.add(x, self.b)
             z, log_det = self.encoder.forward_step(cur_x)
             return z, log_det, cf.batch_l2_norm_squared(self.b), self.b * 1
-        def filename(self):
-            return "l1_model.hdf5"
         def save(self, path):
-            self.save_parameter(path, self.filename, self)
+            filename = 'l1_model.hdf5'
+            self.save_parameter(path, filename, self)
         def save_parameter(self, path, filename, params):
             tmp_filename = str(uuid.uuid4())
             tmp_filepath = os.path.join(path, tmp_filename)
