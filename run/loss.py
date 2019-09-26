@@ -162,7 +162,7 @@ def main():
             cur_x = cf.add(x, self.b)
             z, log_det = self.encoder.forward_step(cur_x)
             # return z, log_det, cf.batch_l2_norm_squared(self.b), self.b * 1
-            return z, log_det, cf.sum(cf.absolute(self.b)), self.b * 1
+            return z, log_det, cf.sum(cf.absolute(self.b.reshape(-1))), self.b * 1
         def save(self, path):
             filename = 'l1_model.hdf5'
             self.save_parameter(path, filename, self)
