@@ -198,7 +198,7 @@ def main():
 
         logpZ1 = 0
         # ez = []
-        for (zi, mean, ln_var) in z:
+        for (zi, mean, ln_var) in zs:
             logpZ1 += cf.gaussian_nll(zi, mean, ln_var)
             
         # logpZ2 = cf.gaussian_nll(z, xp.zeros(z.shape), xp.zeros(z.shape)).data
@@ -208,7 +208,7 @@ def main():
         logpZ2 = cf.gaussian_nll(z, np.mean(z), np.log(np.var(z))).data
 
         logpZ = logpZ2 + logpZ1
-        loss = b_norm + logpZ * 0.5 - fw_ldt
+        loss =  b_norm + logpZ * 0.5 - fw_ldt
 
         epsilon.cleargrads()
         loss.backward()
