@@ -211,7 +211,7 @@ def main():
         # loss =  1000* b_norm + logpZ * 0.5 - fw_ldt
         loss = b_norm + 0.001 * (logpZ * 0.5 - fw_ldt)
 
-        print(b_norm, b.data.dot(b.data))
+        print(b_norm.shape, b.data.dot(b.data).shape)
         epsilon.cleargrads()
         loss.backward()
         optimizer.update(training_step)
