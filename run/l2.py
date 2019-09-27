@@ -38,7 +38,6 @@ def make_uint8(array, bins):
             np.floor((to_cpu(array.transpose(1, 2, 0)) + 0.5) * bins) *
             (255 / bins), 0, 255))
 
-
 def preprocess(image, num_bits_x):
     num_bins_x = 2**num_bits_x
     if num_bits_x < 8:
@@ -126,26 +125,23 @@ def main():
         encoder.to_gpu()
 
     # Load picture
-    x = to_gpu(np.array(Image.open('bg/1.png')).astype('float32'))
-    
+    x = np.array(Image.open('bg/1.png')).astype('float32')
     x = preprocess(x, hyperparams.num_bits_x)
-    # x = xp.array(x, dtype='float32')
-    # x = xp.expand_dims(x, axis=0)
+    x = to_gpu(xp.expand_dims(x, axis=0))
+    x += xp.random.uniform(0, 1.0/num_bins_x, size=x.shape)
 
     # z, fw_ldt = encoder.forward_step(x)        
     # fw_ldt -= math.log(num_bins_x) * num_pixels
+    
+    # logpZ = 0
     # ez = []
     # for (zi, mean, ln_var) in z:
-    #     # logpZ += cf.gaussian_nll(zi, mean, ln_var)
+    #     logpZ += cf.gaussian_nll(zi, mean, ln_var)
     #     ez.append(zi.data.reshape(-1,))
     # ez = np.concatenate(ez)
-    # logpZ = cf.gaussian_nll(ez, xp.zeros(ez.shape, dtype='float32'), xp.zeros(ez.shape, dtype='float32')).data
+    # logpZ2 = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
 
-    # print(fw_ldt, logpZ)
-
-    x = xp.expand_dims(x, axis=0)
-    ori_x = x + xp.random.uniform(0, 1.0 / num_bins_x, size=x.shape)
-    ori_x = xp.array(ori_x, dtype='float32')
+    # print(fw_ldt, logpZ, logpZ2)
 
     # Construct epsilon
     class eps(chainer.ChainList):
@@ -154,26 +150,26 @@ def main():
             self.encoder = glow_encoder
 
             with self.init_scope():
-                self.b = chainer.Parameter(
-                    initializers.Normal(), shape)
-                # self.b = chainer.Parameter(
-                #     initializers.Normal(dtype='float64'), shape)
+                self.b = chainer.Parameter(initializers.Normal(), shape)
         
         def forward(self, x):
             cur_x = cf.add(x, self.b)
-            z, log_det = self.encoder.forward_step(cur_x)
+
+            z, logdet = self.encoder.forward_step(cur_x)
             # return z, log_det, cf.batch_l2_norm_squared(self.b), self.b * 1
-            return z, log_det, cf.sum(cf.absolute(self.b.reshape(-1))), self.b * 1
+            return z, logdet, cf.batch_l2_norm_squared(self.b), self.b * 1, cur_x
+
         def save(self, path):
-            filename = 'l1_model.hdf5'
+            filename = 'loss_model.hdf5'
             self.save_parameter(path, filename, self)
+
         def save_parameter(self, path, filename, params):
             tmp_filename = str(uuid.uuid4())
             tmp_filepath = os.path.join(path, tmp_filename)
             save_hdf5(tmp_filepath, params)
             os.rename(tmp_filepath, os.path.join(path, filename))
 
-    epsilon = eps(ori_x.shape, encoder)
+    epsilon = eps(x.shape, encoder)
     if using_gpu:
         epsilon.to_gpu()
 
@@ -186,33 +182,25 @@ def main():
     b_s = []
     loss_s = []
     logpZ_s = []
+    logpZ2_s = []
     logDet_s = []
     j = 0
 
     for iteration in range(args.total_iteration):
-        start_time = time.time()
-
-        # ori_x += epsilon
-        # z, fw_ldt = encoder.forward_step(ori_x)
-        z, fw_ldt, b_l2norm, b = epsilon.forward(ori_x)            
+        z, fw_ldt, b_norm, b, cur_x = epsilon.forward(x)            
         fw_ldt -= math.log(num_bins_x) * num_pixels
 
-        # logpZ = 0
+        logpZ = 0
         ez = []
         for (zi, mean, ln_var) in z:
-            # logpZ += cf.gaussian_nll(zi, mean, ln_var)
+            logpZ += cf.gaussian_nll(zi, mean, ln_var)
             ez.append(zi.data.reshape(-1,))
             
         ez = np.concatenate(ez)
-        # logpZ = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
-        logpZ = cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data
+        logpZ2 = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
+        # logpZ2 = cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data
 
-        loss = b_l2norm+ (logpZ - fw_ldt)
-        # loss = xp.linalg.norm(b.data.reshape(-1), ord=xp.inf) + (logpZ - fw_ldt)
-
-        # print("loss", _float(loss), loss.data)
-        # print('logpZ', _float(logpZ), logpZ.data)
-        # print('logDet', _float(fw_ldt), fw_ldt)
+        loss = b_norm + (logpZ2 / 2.0 + logpZ / 2.0 - fw_ldt)
 
         epsilon.cleargrads()
         loss.backward()
@@ -242,6 +230,8 @@ def main():
             np.save(args.ckpt + '/'+str(j)+'loss.npy', loss_s)
             np.save(args.ckpt + '/'+str(j)+'logpZ.npy', logpZ_s)
             np.save(args.ckpt + '/'+str(j)+'logDet.npy', logDet_s)
+            cur_x = make_uint8(cur_x[0].data, num_bins_x)
+            np.save(args.ckpt + '/'+str(j)+'image.npy', cur_x)
             z_s = []
             b_s = []
             loss_s = []
@@ -253,11 +243,9 @@ def main():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--snapshot-path", "-snapshot", type=str, default='/home/data1/meng/chainer/snapshot_64')
+        "--snapshot-path", "-snapshot", type=str, default='/home/data1/meng/chainer/snapshot_128')
     parser.add_argument("--gpu-device", "-gpu", type=int, default=1)
-    parser.add_argument('--ckpt', type=str, default='mean_logs_l1')
-    # parser.add_argument("--dataset-path", "-dataset", type=str, required=False)
-    # parser.add_argument("--dataset-format", "-ext", type=str, required=True)
-    parser.add_argument("--total-iteration", "-iter", type=int, default=10)
+    parser.add_argument('--ckpt', type=str, required=True)
+    parser.add_argument("--total-iteration", "-iter", type=int, default=1000)
     args = parser.parse_args()
     main()
