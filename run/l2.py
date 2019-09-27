@@ -202,11 +202,11 @@ def main():
         #     logpZ += cf.gaussian_nll(zi, mean, ln_var)
         #     ez.append(zi.data.reshape(-1,))
             
-        logpZ2 = cf.gaussian_nll(z, xp.zeros(z.shape), xp.zeros(z.shape)).data
+        # logpZ2 = cf.gaussian_nll(z, xp.zeros(z.shape), xp.zeros(z.shape)).data
 
         # ez = np.concatenate(ez)
         # logpZ2 = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
-        # logpZ2 = cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data
+        logpZ2 = cf.gaussian_nll(z, np.mean(z), np.log(np.var(z))).data
 
         logpZ = logpZ2
         loss = b_norm + logpZ - fw_ldt
