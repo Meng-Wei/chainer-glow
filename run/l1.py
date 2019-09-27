@@ -131,7 +131,7 @@ def main():
     first_x = to_gpu(xp.expand_dims(first_x, axis=0))
     first_x += xp.random.uniform(0, 1.0/num_bins_x, size=first_x.shape)
 
-    z, fw_ldt = encoder.forward_step(x)        
+    z, fw_ldt = encoder.forward_step(first_x)        
     fw_ldt -= math.log(num_bins_x) * num_pixels
     
     logpZ = 0
