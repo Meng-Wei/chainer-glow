@@ -200,7 +200,7 @@ def main():
         logpZ2 = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
         # logpZ2 = cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data
 
-        loss = b_norm + (logpZ2 + logpZ - fw_ldt)
+        loss = b_norm + (logpZ2 / 2.0 + logpZ / 2.0 - fw_ldt)
 
         epsilon.cleargrads()
         loss.backward()
