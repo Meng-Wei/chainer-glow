@@ -208,14 +208,15 @@ def main():
         # logpZ2 = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
         # logpZ2 = cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data
 
-        loss = b_norm + logpZ2 - fw_ldt
+        logpZ = logpZ2
+        loss = b_norm + logpZ - fw_ldt
 
         epsilon.cleargrads()
         loss.backward()
         optimizer.update(training_step)
         training_step += 1
 
-        z_s.append(ez.get())
+        z_s.append(z.get())
         b_s.append(cupy.asnumpy(b.data))
         loss_s.append(_float(loss))
         logpZ_s.append(_float(logpZ))
