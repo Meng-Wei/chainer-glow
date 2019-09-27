@@ -163,7 +163,7 @@ def main():
             ez = np.concatenate(ez)
             
             # return z, logdet, cf.batch_l2_norm_squared(self.b), self.b * 1, cur_x
-            return ez,z, logdet, cf.batch_l2_norm_squared(self.b), self.b * 1, cur_x
+            return ez, z, logdet, cf.batch_l2_norm_squared(self.b), self.b * 1, cur_x
 
         def save(self, path):
             filename = 'loss_model.hdf5'
@@ -195,6 +195,7 @@ def main():
     for iteration in range(args.total_iteration):
         z, zs, fw_ldt, b_norm, b, cur_x = epsilon.forward(x)            
         fw_ldt -= math.log(num_bins_x) * num_pixels
+        print(z.shape)
 
         logpZ1 = 0
         # ez = []
