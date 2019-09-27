@@ -126,23 +126,22 @@ def main():
 
     # Load picture
     x = np.array(Image.open('bg/1.png')).astype('float32')
-    
-    first_x = preprocess(x, hyperparams.num_bits_x)
-    first_x = to_gpu(xp.expand_dims(first_x, axis=0))
-    first_x += xp.random.uniform(0, 1.0/num_bins_x, size=first_x.shape)
+    x = preprocess(x, hyperparams.num_bits_x)
+    x = to_gpu(xp.expand_dims(x, axis=0))
+    x += xp.random.uniform(0, 1.0/num_bins_x, size=x.shape)
 
-    z, fw_ldt = encoder.forward_step(first_x)        
-    fw_ldt -= math.log(num_bins_x) * num_pixels
+    # z, fw_ldt = encoder.forward_step(x)        
+    # fw_ldt -= math.log(num_bins_x) * num_pixels
     
-    logpZ = 0
-    ez = []
-    for (zi, mean, ln_var) in z:
-        logpZ += cf.gaussian_nll(zi, mean, ln_var)
-        ez.append(zi.data.reshape(-1,))
-    ez = np.concatenate(ez)
-    logpZ2 = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
+    # logpZ = 0
+    # ez = []
+    # for (zi, mean, ln_var) in z:
+    #     logpZ += cf.gaussian_nll(zi, mean, ln_var)
+    #     ez.append(zi.data.reshape(-1,))
+    # ez = np.concatenate(ez)
+    # logpZ2 = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
 
-    print(fw_ldt, logpZ, logpZ2)
+    # print(fw_ldt, logpZ, logpZ2)
 
     # Construct epsilon
     class eps(chainer.ChainList):
@@ -154,11 +153,7 @@ def main():
                 self.b = chainer.Parameter(initializers.Normal(), shape)
         
         def forward(self, x):
-            cur_x = cf.add(to_gpu(x), self.b)
-
-            cur_x = preprocess(cur_x.data, hyperparams.num_bits_x)
-            cur_x = to_gpu(xp.expand_dims(cur_x, axis=0))
-            cur_x += xp.random.uniform(0, 1.0/num_bins_x, size=cur_x.shape)
+            cur_x = cf.add(x, self.b)
 
             z, logdet = self.encoder.forward_step(cur_x)
             # return z, log_det, cf.batch_l2_norm_squared(self.b), self.b * 1
