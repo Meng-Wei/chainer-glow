@@ -154,7 +154,7 @@ def main():
                 self.b = chainer.Parameter(initializers.Normal(), shape)
         
         def forward(self, x):
-            cur_x = cf.add(x, self.b)
+            cur_x = cf.add(to_gpu(x), self.b)
 
             cur_x = preprocess(cur_x, hyperparams.num_bits_x)
             cur_x = to_gpu(xp.expand_dims(cur_x, axis=0))
@@ -162,7 +162,7 @@ def main():
 
             z, logdet = self.encoder.forward_step(cur_x)
             # return z, log_det, cf.batch_l2_norm_squared(self.b), self.b * 1
-            return z, logdet, cf.batch_l2_norm_squared(self.b), self.b * 1
+            return z, logdet, cf.batch_l2_norm_squared(self.b), self.b * 1, cur_x
 
         def save(self, path):
             filename = 'loss_model.hdf5'
@@ -192,7 +192,7 @@ def main():
     j = 0
 
     for iteration in range(args.total_iteration):
-        z, fw_ldt, b_norm, b = epsilon.forward(x)            
+        z, fw_ldt, b_norm, b, cur_x = epsilon.forward(x)            
         fw_ldt -= math.log(num_bins_x) * num_pixels
 
         logpZ = 0
@@ -235,6 +235,8 @@ def main():
             np.save(args.ckpt + '/'+str(j)+'loss.npy', loss_s)
             np.save(args.ckpt + '/'+str(j)+'logpZ.npy', logpZ_s)
             np.save(args.ckpt + '/'+str(j)+'logDet.npy', logDet_s)
+            cur_x = make_uint8(cur_x[0], num_bins_x)
+            np.save(args.ckpt + '/'+str(j)+'image.npy', cur_x)
             z_s = []
             b_s = []
             loss_s = []
