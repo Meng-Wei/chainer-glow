@@ -195,7 +195,6 @@ def main():
     for iteration in range(args.total_iteration):
         z, zs, fw_ldt, b_norm, b, cur_x = epsilon.forward(x)            
         fw_ldt -= math.log(num_bins_x) * num_pixels
-        print(z.shape)
 
         logpZ1 = 0
         # ez = []
@@ -209,8 +208,9 @@ def main():
         logpZ2 = cf.gaussian_nll(z, np.mean(z), np.log(np.var(z))).data
 
         logpZ = logpZ2 + logpZ1
-        loss =  b_norm + logpZ * 0.5 - fw_ldt
+        loss =  1000* b_norm + logpZ * 0.5 - fw_ldt
 
+        print(b_norm, b.dot(b))
         epsilon.cleargrads()
         loss.backward()
         optimizer.update(training_step)
