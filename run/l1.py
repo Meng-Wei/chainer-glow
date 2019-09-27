@@ -197,8 +197,8 @@ def main():
             ez.append(zi.data.reshape(-1,))
             
         ez = np.concatenate(ez)
-        logpZ2 = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
-        # logpZ2 = cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data
+        # logpZ2 = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
+        logpZ2 = cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data
 
         loss = b_norm + (logpZ2 - fw_ldt)
 
