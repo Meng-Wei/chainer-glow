@@ -230,7 +230,7 @@ def main():
             np.save(args.ckpt + '/'+str(j)+'loss.npy', loss_s)
             np.save(args.ckpt + '/'+str(j)+'logpZ.npy', logpZ_s)
             np.save(args.ckpt + '/'+str(j)+'logDet.npy', logDet_s)
-            cur_x = make_uint8(cur_x[0], num_bins_x)
+            cur_x = make_uint8(cur_x[0].data, num_bins_x)
             np.save(args.ckpt + '/'+str(j)+'image.npy', cur_x)
             z_s = []
             b_s = []
