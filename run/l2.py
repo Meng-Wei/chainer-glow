@@ -209,7 +209,7 @@ def main():
 
         logpZ = (logpZ2 + logpZ1)*0.5
         # loss =  1000* b_norm + logpZ * 0.5 - fw_ldt
-        loss = b_norm + 0.05 * (logpZ - fw_ldt)
+        loss = b_norm + 0.01 * (logpZ - fw_ldt)
 
         # print(b_norm, xp.linalg.norm(b.data))
         epsilon.cleargrads()
