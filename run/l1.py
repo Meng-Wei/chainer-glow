@@ -156,7 +156,7 @@ def main():
         def forward(self, x):
             cur_x = cf.add(to_gpu(x), self.b)
 
-            cur_x = preprocess(cur_x, hyperparams.num_bits_x)
+            cur_x = preprocess(cur_x.data, hyperparams.num_bits_x)
             cur_x = to_gpu(xp.expand_dims(cur_x, axis=0))
             cur_x += xp.random.uniform(0, 1.0/num_bins_x, size=cur_x.shape)
 
