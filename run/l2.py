@@ -207,11 +207,11 @@ def main():
         # logpZ2 = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
         logpZ2 = cf.gaussian_nll(z, np.mean(z), np.log(np.var(z))).data
 
-        logpZ = logpZ2 + logpZ1
+        logpZ = (logpZ2 + logpZ1)*0.5
         # loss =  1000* b_norm + logpZ * 0.5 - fw_ldt
-        loss = b_norm + 0.001 * (logpZ * 0.5 - fw_ldt)
+        loss = b_norm + 0.001 * (logpZ - fw_ldt)
 
-        print(b_norm.shape, b.data.dot(b.data).shape)
+        print(b_norm, xp.linalog.norm(b.data))
         epsilon.cleargrads()
         loss.backward()
         optimizer.update(training_step)
