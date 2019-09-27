@@ -156,8 +156,14 @@ def main():
             cur_x = cf.add(x, self.b)
 
             z, logdet = self.encoder.forward_step(cur_x)
-            # return z, log_det, cf.batch_l2_norm_squared(self.b), self.b * 1
-            return z, logdet, cf.batch_l2_norm_squared(self.b), self.b * 1, cur_x
+
+            ez = []
+            for (zi, mean, ln_var) in z:
+                ez.append(zi.data.reshape(-1,))
+            ez = np.concatenate(ez)
+            
+            # return z, logdet, cf.batch_l2_norm_squared(self.b), self.b * 1, cur_x
+            return ez, logdet, cf.batch_l2_norm_squared(self.b), self.b * 1, cur_x
 
         def save(self, path):
             filename = 'loss_model.hdf5'
@@ -190,17 +196,19 @@ def main():
         z, fw_ldt, b_norm, b, cur_x = epsilon.forward(x)            
         fw_ldt -= math.log(num_bins_x) * num_pixels
 
-        logpZ = 0
-        ez = []
-        for (zi, mean, ln_var) in z:
-            logpZ += cf.gaussian_nll(zi, mean, ln_var)
-            ez.append(zi.data.reshape(-1,))
+        # logpZ = 0
+        # ez = []
+        # for (zi, mean, ln_var) in z:
+        #     logpZ += cf.gaussian_nll(zi, mean, ln_var)
+        #     ez.append(zi.data.reshape(-1,))
             
-        ez = np.concatenate(ez)
-        logpZ2 = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
+        logpZ2 = cf.gaussian_nll(z, xp.zeros(z.shape), xp.zeros(z.shape)).data
+
+        # ez = np.concatenate(ez)
+        # logpZ2 = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
         # logpZ2 = cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data
 
-        loss = b_norm + (logpZ2 / 2.0 + logpZ / 2.0 - fw_ldt)
+        loss = b_norm + logpZ2 - fw_ldt
 
         epsilon.cleargrads()
         loss.backward()
