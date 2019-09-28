@@ -219,7 +219,7 @@ def main():
 
         logpZ = (logpZ2 + logpZ1)/2
         # loss =  1000* b_norm + logpZ * 0.5 - fw_ldt
-        loss = b_norm + 0.01 * (logpZ - fw_ldt)
+        loss = b_norm + (logpZ - fw_ldt)
 
         epsilon.cleargrads()
         loss.backward()
@@ -234,10 +234,11 @@ def main():
         logDet_s.append(_float(fw_ldt))
 
         printr(
-            "Iteration {}: loss: {:.6f} - logpZ: {:.6f} - log_det: {:.6f} - logpX: {:.6f}\n".
+            "Iteration {}: loss: {:.6f} - b_norm: {:.6f} - logpZ: {:.6f} - log_det: {:.6f} - logpX: {:.6f}\n".
             format(
                 iteration + 1,
                 _float(loss),
+                _float(b_norm),
                 _float(logpZ),
                 _float(fw_ldt),
                 _float(logpZ) - _float(fw_ldt)
