@@ -89,38 +89,6 @@ def main():
     num_bins_x = 2.0**hyperparams.num_bits_x
     num_pixels = 3 * hyperparams.image_size[0] * hyperparams.image_size[1]
 
-    if False:
-        assert args.dataset_format in ["png", "npy"]
-
-        files = Path(args.dataset_path).glob("*.{}".format(args.dataset_format))
-        if args.dataset_format == "png":
-            images = []
-            for filepath in files:
-                image = np.array(Image.open(filepath)).astype("float32")
-                image = preprocess(image, hyperparams.num_bits_x)
-                images.append(image)
-            assert len(images) > 0
-            images = np.asanyarray(images)
-        elif args.dataset_format == "npy":
-            images = []
-            for filepath in files:
-                array = np.load(filepath).astype("float32")
-                array = preprocess(array, hyperparams.num_bits_x)
-                images.append(array)
-            assert len(images) > 0
-            num_files = len(images)
-            images = np.asanyarray(images)
-            images = images.reshape((num_files * images.shape[1], ) +
-                                    images.shape[2:])
-        else:
-            raise NotImplementedError
-
-        dataset = glow.dataset.Dataset(images)
-        iterator = glow.dataset.Iterator(dataset, batch_size=1)
-
-        print(tabulate([["#image", len(dataset)]]))
-
-    # TODO: Init encoder and stored info
     encoder = Glow(hyperparams, hdf5_path=args.snapshot_path)
     if using_gpu:
         encoder.to_gpu()
@@ -128,9 +96,6 @@ def main():
     # Load picture
     x = np.array(Image.open('bg/1.png')).astype('float32')
     x = preprocess(x, hyperparams.num_bits_x)
-    # img_x = make_uint8(x, num_bins_x)
-    # img_x = Image.fromarray(img_x)
-    # img_x.save('x.png')
 
     x = to_gpu(xp.expand_dims(x, axis=0))
     x += xp.random.uniform(0, 1.0/num_bins_x, size=x.shape)
@@ -161,9 +126,9 @@ def main():
         def forward(self, x):
             b = cf.tanh(self.b)
 
-            m = cf.repeat(self.m, 8, axis=2)
+            m = cf.softplus(self.m)
+            m = cf.repeat(m, 8, axis=2)
             m = cf.repeat(m, 8, axis=1)
-            m = cf.softplus(m)
 
             b = b * m 
             cur_x = cf.add(x, b)
@@ -193,7 +158,7 @@ def main():
         epsilon.to_gpu()
 
     # optimizer = Optimizer(epsilon)
-    optimizer = optimizers.Adam().setup(epsilon)
+    optimizer = optimizers.SGD().setup(epsilon)
     print('init finish')
 
     training_step = 0
