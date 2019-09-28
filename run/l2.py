@@ -127,8 +127,8 @@ def main():
     # Load picture
     x = np.array(Image.open('bg/1.png')).astype('float32')
     x = preprocess(x, hyperparams.num_bits_x)
-    x = make_uint8(x, num_bins_x)
-    img_x = Image.fromarray(x)
+    img_x = make_uint8(x, num_bins_x)
+    img_x = Image.fromarray(img_x)
     img_x.save('x.png')
     print("reach here")
 
