@@ -177,7 +177,7 @@ def main():
             ez = np.concatenate(ez)
 
             # return ez, z, logdet, cf.batch_l2_norm_squared(self.b), self.b * 1, cur_x, self.m*1
-            return ez, z, logdet, cf.batch_l2_norm_squared(b), xp.tanh(self.b*1), cur_x, m
+            return ez, z, logdet, cf.batch_l2_norm_squared(b), xp.tanh(self.b.data*1), cur_x, m
 
         def save(self, path):
             filename = 'loss_model.hdf5'
