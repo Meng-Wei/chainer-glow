@@ -162,7 +162,7 @@ def main():
 
             # Preprocess
             cur_x = cf.add(x, b)
-            cur_x = xp.floor(cur_x / 8)
+            cur_x = cf.floor(cur_x / 8)
             cur_x = cur_x / 32 - 0.5
             cur_x = cur_x.transpose((0, 3, 1, 2))
 
