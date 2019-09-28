@@ -177,7 +177,7 @@ def main():
             ez = np.concatenate(ez)
 
             # return ez, z, logdet, cf.batch_l2_norm_squared(self.b), self.b * 1, cur_x, self.m*1
-            return ez, z, logdet, cf.batch_l2_norm_squared(b), self.b*1, cur_x, self.m*1
+            return ez, z, logdet, cf.batch_l2_norm_squared(b), b, cur_x, m
 
         def save(self, path):
             filename = 'loss_model.hdf5'
@@ -207,7 +207,10 @@ def main():
     j = 0
 
     for iteration in range(args.total_iteration):
-        z, zs, fw_ldt, b_norm, b, cur_x, m = epsilon.forward(x)            
+        z, zs, fw_ldt, b_norm, b, cur_x, m = epsilon.forward(x)   
+        print('b_norm, ', b_norm.data)
+        print('test ', xp.linalog.norm(b.data*m.data)**2 )
+
         fw_ldt -= math.log(num_bins_x) * num_pixels
 
         logpZ1 = 0
@@ -245,7 +248,7 @@ def main():
             )
         )
 
-        if iteration % 100 == 99:
+        if iteration % 100 == 9:
             np.save(args.ckpt + '/'+str(j)+'z.npy', z_s)
             np.save(args.ckpt + '/'+str(j)+'b.npy', b_s)
             np.save(args.ckpt + '/'+str(j)+'loss.npy', loss_s)
@@ -269,6 +272,6 @@ if __name__ == "__main__":
         "--snapshot-path", "-snapshot", type=str, default='/home/data1/meng/chainer/snapshot_128')
     parser.add_argument("--gpu-device", "-gpu", type=int, default=1)
     parser.add_argument('--ckpt', type=str, required=True)
-    parser.add_argument("--total-iteration", "-iter", type=int, default=1000)
+    parser.add_argument("--total-iteration", "-iter", type=int, default=10)
     args = parser.parse_args()
     main()
