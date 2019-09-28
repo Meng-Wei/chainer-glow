@@ -161,7 +161,7 @@ def main():
             b = cf.tanh(self.b)
             for i in range(self.m.shape[0]):
                 for j in range(self.m.shape[1]):
-                    b[:, i*8:(i+1)*8, j*8:(j+1)*8] *= m[i, j]
+                    b[:, i*8:(i+1)*8, j*8:(j+1)*8] *= self.m[i, j]
 
             cur_x = cf.add(x, b)
 
