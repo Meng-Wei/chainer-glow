@@ -154,7 +154,7 @@ def main():
                 self.m = chainer.Parameter(initializers.Uniform(), (16, 16, 3))
         
         def forward(self, x):
-            b = cf.tanh(self.b)
+            b = cf.tanh(self.b) * 255
             m = cf.repeat(self.m, 8, axis=0)
             m = cf.repeat(m, 8, axis=1)
             m = cf.softplus(m)
