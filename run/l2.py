@@ -154,30 +154,29 @@ def main():
             self.encoder = glow_encoder
 
             with self.init_scope():
-                self.b = chainer.Parameter(initializers.Normal(), shape)
+                self.b = chainer.Parameter(initializers.Uniform(), shape)
                 # self.m = chainer.Parameter(initializers.Uniform(), (shape[2], shape[3]))
-                self.m = chainer.Parameter(initializers.Uniform(), (16, 16))
+                self.m = chainer.Parameter(initializers.Uniform(), (3, 16, 16))
         
         def forward(self, x):
             b = cf.tanh(self.b)
-            m = cf.repeat(self.m, 8, axis=1)
-            m = cf.repeat(m, 8, axis=0)
-            # for i in range(self.m.shape[0]):
-            #     for j in range(self.m.shape[1]):
-            #         b[:, i*8:(i+1)*8, j*8:(j+1)*8] *= self.m[i, j]
 
-            b = b * m
+            m = cf.repeat(self.m, 8, axis=2)
+            m = cf.repeat(m, 8, axis=1)
+            m = cf.relu(m)
+
+            b = b * m 
             cur_x = cf.add(x, b)
 
-            z, logdet = self.encoder.forward_step(cur_x)
+            zs, logdet = self.encoder.forward_step(cur_x)
 
-            ez = []
-            for (zi, mean, ln_var) in z:
-                ez.append(zi.data.reshape(-1,))
-            ez = np.concatenate(ez)
+            z = []
+            for (zi, mean, ln_var) in zs:
+                z.append(zi.data.reshape(-1,))
+            z = np.concatenate(z)
 
-            # return ez, z, logdet, cf.batch_l2_norm_squared(self.b), self.b * 1, cur_x, self.m*1
-            return ez, z, logdet, cf.batch_l2_norm_squared(b), xp.tanh(self.b.data*1), cur_x, m
+            # return z, zs, logdet, cf.batch_l2_norm_squared(b), xp.tanh(self.b.data*1), cur_x, m
+            return z, zs, logdet, cf.sum(cf.abs(b)), xp.tanh(self.b.data*1), m, cur_x
 
         def save(self, path):
             filename = 'loss_model.hdf5'
@@ -207,9 +206,7 @@ def main():
     j = 0
 
     for iteration in range(args.total_iteration):
-        z, zs, fw_ldt, b_norm, b, cur_x, m = epsilon.forward(x)   
-        print('b_norm, ', b_norm.data)
-        print('test ', xp.linalg.norm(b * m.data)**2 )
+        z, zs, fw_ldt, b_norm, b, m, cur_x = epsilon.forward(x)
 
         fw_ldt -= math.log(num_bins_x) * num_pixels
 
@@ -224,14 +221,13 @@ def main():
         # loss =  1000* b_norm + logpZ * 0.5 - fw_ldt
         loss = b_norm + 0.01 * (logpZ - fw_ldt)
 
-        # print(b_norm, xp.linalg.norm(b.data))
         epsilon.cleargrads()
         loss.backward()
         optimizer.update(training_step)
         training_step += 1
 
         z_s.append(z.get())
-        # b_s.append(cupy.asnumpy(b.data))
+        b_s.append(cupy.asnumpy(b))
         m_s.append(cupy.asnumpy(m.data))
         loss_s.append(_float(loss))
         logpZ_s.append(_float(logpZ))
@@ -248,7 +244,7 @@ def main():
             )
         )
 
-        if iteration % 100 == 9:
+        if iteration % 100 == 99:
             np.save(args.ckpt + '/'+str(j)+'z.npy', z_s)
             np.save(args.ckpt + '/'+str(j)+'b.npy', b_s)
             np.save(args.ckpt + '/'+str(j)+'loss.npy', loss_s)
@@ -272,6 +268,6 @@ if __name__ == "__main__":
         "--snapshot-path", "-snapshot", type=str, default='/home/data1/meng/chainer/snapshot_128')
     parser.add_argument("--gpu-device", "-gpu", type=int, default=1)
     parser.add_argument('--ckpt', type=str, required=True)
-    parser.add_argument("--total-iteration", "-iter", type=int, default=10)
+    parser.add_argument("--total-iteration", "-iter", type=int, default=1000)
     args = parser.parse_args()
     main()
