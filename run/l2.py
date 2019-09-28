@@ -155,7 +155,7 @@ def main():
 
             with self.init_scope():
                 self.b = chainer.Parameter(initializers.Normal(), shape)
-                self.m = chainer.Parameter(initializers.Uniform(), (shape[1]/8, shape[1]/8))
+                self.m = chainer.Parameter(initializers.Uniform(), (16, 16))
         
         def forward(self, x):
             b = cf.tanh(self.b)
