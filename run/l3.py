@@ -160,8 +160,8 @@ def main():
 
     # optimizer = Optimizer(epsilon)
     optimizer = optimizers.Adam(alpha=0.0001).setup(epsilon)
-    epsilon.predictor.b.update_rule.hyperparam.lr = 0.001
-    epsilon.predictor.m.update_rule.hyperparam.lr = 0.1
+    epsilon.b.update_rule.hyperparam.lr = 0.001
+    epsilon.m.update_rule.hyperparam.lr = 0.1
     print('init finish')
 
     training_step = 0
