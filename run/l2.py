@@ -155,7 +155,6 @@ def main():
 
             with self.init_scope():
                 self.b = chainer.Parameter(initializers.Uniform(), shape)
-                # self.m = chainer.Parameter(initializers.Uniform(), (shape[2], shape[3]))
                 self.m = chainer.Parameter(initializers.Uniform(), (3, 16, 16))
         
         def forward(self, x):
@@ -163,7 +162,7 @@ def main():
 
             m = cf.repeat(self.m, 8, axis=2)
             m = cf.repeat(m, 8, axis=1)
-            m = cf.relu(m)
+            m = cf.sigmoid(m)
 
             b = b * m 
             cur_x = cf.add(x, b)
@@ -217,7 +216,7 @@ def main():
         logpZ2 = cf.gaussian_nll(z, xp.zeros(z.shape), xp.zeros(z.shape)).data
         # logpZ2 = cf.gaussian_nll(z, np.mean(z), np.log(np.var(z))).data
 
-        logpZ = logpZ1
+        logpZ = (logpZ2 + logpZ1)/2
         # loss =  1000* b_norm + logpZ * 0.5 - fw_ldt
         loss = b_norm + (logpZ - fw_ldt)
 
