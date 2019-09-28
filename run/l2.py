@@ -206,7 +206,7 @@ def main():
         logpZ2 = cf.gaussian_nll(z, xp.zeros(z.shape), xp.zeros(z.shape)).data
         # logpZ2 = cf.gaussian_nll(z, np.mean(z), np.log(np.var(z))).data
 
-        logpZ = (logpZ2 + logpZ1)*0.5
+        logpZ = (10*logpZ2 + logpZ1)/11
         # loss =  1000* b_norm + logpZ * 0.5 - fw_ldt
         loss = b_norm + 0.01 * (logpZ - fw_ldt)
 
