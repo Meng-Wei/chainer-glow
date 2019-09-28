@@ -155,14 +155,14 @@ def main():
 
             with self.init_scope():
                 self.b = chainer.Parameter(initializers.Uniform(), shape)
-                self.m = chainer.Parameter(initializers.Zero(), (3, 16, 16))
+                self.m = chainer.Parameter(initializers.Uniform(), (3, 16, 16))
         
         def forward(self, x):
             b = cf.tanh(self.b)
 
             m = cf.repeat(self.m, 8, axis=2)
             m = cf.repeat(m, 8, axis=1)
-            m = cf.sigmoid(m)
+            m = cf.relu(m)
 
             b = b * m 
             cur_x = cf.add(x, b)
