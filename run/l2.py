@@ -231,7 +231,7 @@ def main():
         training_step += 1
 
         z_s.append(z.get())
-        b_s.append(cupy.asnumpy(b.data))
+        # b_s.append(cupy.asnumpy(b.data))
         m_s.append(cupy.asnumpy(m.data))
         loss_s.append(_float(loss))
         logpZ_s.append(_float(logpZ))
