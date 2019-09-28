@@ -127,10 +127,9 @@ def main():
     # Load picture
     x = np.array(Image.open('bg/1.png')).astype('float32')
     x = preprocess(x, hyperparams.num_bits_x)
-    img_x = make_uint8(x, num_bins_x)
-    img_x = Image.fromarray(img_x)
-    img_x.save('x.png')
-    print("reach here")
+    # img_x = make_uint8(x, num_bins_x)
+    # img_x = Image.fromarray(img_x)
+    # img_x.save('x.png')
 
     x = to_gpu(xp.expand_dims(x, axis=0))
     x += xp.random.uniform(0, 1.0/num_bins_x, size=x.shape)
@@ -207,7 +206,7 @@ def main():
         for (zi, mean, ln_var) in zs:
             logpZ1 += cf.gaussian_nll(zi, mean, ln_var)
             if z_index == 0:
-                print(mean[0], ln_var[0])
+                print(mean.shape, ln_var.shape)
             z_index += 1
             
         # logpZ2 = cf.gaussian_nll(z, xp.zeros(z.shape), xp.zeros(z.shape)).data
