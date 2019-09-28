@@ -157,7 +157,8 @@ def main():
                 self.b = chainer.Parameter(initializers.Normal(), shape)
         
         def forward(self, x):
-            cur_x = cf.add(x, self.b)
+            b = cf.tanh(self.b)
+            cur_x = cf.add(x, b)
 
             z, logdet = self.encoder.forward_step(cur_x)
 
@@ -165,8 +166,7 @@ def main():
             for (zi, mean, ln_var) in z:
                 ez.append(zi.data.reshape(-1,))
             ez = np.concatenate(ez)
-            
-            # return z, logdet, cf.batch_l2_norm_squared(self.b), self.b * 1, cur_x
+
             return ez, z, logdet, cf.batch_l2_norm_squared(self.b), self.b * 1, cur_x
 
         def save(self, path):
@@ -192,7 +192,6 @@ def main():
     b_s = []
     loss_s = []
     logpZ_s = []
-    logpZ2_s = []
     logDet_s = []
     j = 0
 
@@ -201,19 +200,11 @@ def main():
         fw_ldt -= math.log(num_bins_x) * num_pixels
 
         logpZ1 = 0
-        # ez = []
-        z_index = 0
         for (zi, mean, ln_var) in zs:
             logpZ1 += cf.gaussian_nll(zi, mean, ln_var)
-            if z_index == 0:
-                print(mean[0,0,0,:5].data, ln_var[0,0,0,:5].data)
-            z_index += 1
             
-        # logpZ2 = cf.gaussian_nll(z, xp.zeros(z.shape), xp.zeros(z.shape)).data
-
-        # ez = np.concatenate(ez)
-        # logpZ2 = cf.gaussian_nll(z, xp.zeros(z.shape), xp.zeros(z.shape)).data
-        logpZ2 = cf.gaussian_nll(z, np.mean(z), np.log(np.var(z))).data
+        logpZ2 = cf.gaussian_nll(z, xp.zeros(z.shape), xp.zeros(z.shape)).data
+        # logpZ2 = cf.gaussian_nll(z, np.mean(z), np.log(np.var(z))).data
 
         logpZ = (logpZ2 + logpZ1)*0.5
         # loss =  1000* b_norm + logpZ * 0.5 - fw_ldt
