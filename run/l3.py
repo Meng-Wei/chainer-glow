@@ -24,7 +24,8 @@ import glow
 
 from model import Glow, to_cpu, to_gpu
 from hyperparams import Hyperparameters
-from optimizer import Optimizer
+# from optimizer import Optimizer
+from chainer import optimizers
 
 def make_uint8(array, bins):
     if array.ndim == 4:
@@ -191,7 +192,8 @@ def main():
     if using_gpu:
         epsilon.to_gpu()
 
-    optimizer = Optimizer(epsilon)
+    # optimizer = Optimizer(epsilon)
+    optimizer = optimizers.Adam.setup(epsilon)
     print('init finish')
 
     training_step = 0
@@ -205,6 +207,7 @@ def main():
     j = 0
 
     for iteration in range(args.total_iteration):
+        epsilon.cleargrads()
         z, zs, fw_ldt, b_norm, b, m, cur_x = epsilon.forward(x)
 
         fw_ldt -= math.log(num_bins_x) * num_pixels
@@ -220,9 +223,8 @@ def main():
         # loss =  1000* b_norm + logpZ * 0.5 - fw_ldt
         loss = b_norm + (logpZ - fw_ldt)
 
-        epsilon.cleargrads()
         loss.backward()
-        optimizer.update(training_step)
+        optimizer.update()
         training_step += 1
 
         z_s.append(z.get())
