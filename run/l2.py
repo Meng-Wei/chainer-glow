@@ -209,7 +209,7 @@ def main():
     for iteration in range(args.total_iteration):
         z, zs, fw_ldt, b_norm, b, cur_x, m = epsilon.forward(x)   
         print('b_norm, ', b_norm.data)
-        print('test ', xp.linalog.norm(b.data*m.data)**2 )
+        print('test ', xp.linalg.norm(b.data*m.data)**2 )
 
         fw_ldt -= math.log(num_bins_x) * num_pixels
 
