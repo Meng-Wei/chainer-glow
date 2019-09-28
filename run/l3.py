@@ -126,6 +126,7 @@ def main():
         def forward(self, x):
             b = cf.tanh(self.b)
 
+            # Not sure if implementation is wrong
             m = cf.softplus(self.m)
             m = cf.repeat(m, 8, axis=2)
             m = cf.repeat(m, 8, axis=1)
@@ -159,6 +160,8 @@ def main():
 
     # optimizer = Optimizer(epsilon)
     optimizer = optimizers.Adam(alpha=0.0001).setup(epsilon)
+    epsilon.predictor.b.update_rule.hyperparam.lr = 0.001
+    epsilon.predictor.m.update_rule.hyperparam.lr = 0.1
     print('init finish')
 
     training_step = 0
