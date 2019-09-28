@@ -127,6 +127,10 @@ def main():
     # Load picture
     x = np.array(Image.open('bg/1.png')).astype('float32')
     x = preprocess(x, hyperparams.num_bits_x)
+    # img_x = make_uint8(x, num_bins_x)
+    # img_x = Image.fromarray(img_x)
+    # img_x.save('x.png')
+
     x = to_gpu(xp.expand_dims(x, axis=0))
     x += xp.random.uniform(0, 1.0/num_bins_x, size=x.shape)
 
@@ -153,11 +157,17 @@ def main():
                 self.b = chainer.Parameter(initializers.Normal(), shape)
         
         def forward(self, x):
-            cur_x = cf.add(x, self.b)
+            b = cf.tanh(self.b)
+            cur_x = cf.add(x, b)
 
             z, logdet = self.encoder.forward_step(cur_x)
-            # return z, log_det, cf.batch_l2_norm_squared(self.b), self.b * 1
-            return z, logdet, cf.batch_l2_norm_squared(self.b), self.b * 1, cur_x
+
+            ez = []
+            for (zi, mean, ln_var) in z:
+                ez.append(zi.data.reshape(-1,))
+            ez = np.concatenate(ez)
+
+            return ez, z, logdet, cf.batch_l2_norm_squared(self.b), self.b * 1, cur_x
 
         def save(self, path):
             filename = 'loss_model.hdf5'
@@ -182,32 +192,31 @@ def main():
     b_s = []
     loss_s = []
     logpZ_s = []
-    logpZ2_s = []
     logDet_s = []
     j = 0
 
     for iteration in range(args.total_iteration):
-        z, fw_ldt, b_norm, b, cur_x = epsilon.forward(x)            
+        z, zs, fw_ldt, b_norm, b, cur_x = epsilon.forward(x)            
         fw_ldt -= math.log(num_bins_x) * num_pixels
 
-        logpZ = 0
-        ez = []
-        for (zi, mean, ln_var) in z:
-            logpZ += cf.gaussian_nll(zi, mean, ln_var)
-            ez.append(zi.data.reshape(-1,))
+        logpZ1 = 0
+        for (zi, mean, ln_var) in zs:
+            logpZ1 += cf.gaussian_nll(zi, mean, ln_var)
             
-        ez = np.concatenate(ez)
-        logpZ2 = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
-        # logpZ2 = cf.gaussian_nll(ez, np.mean(ez), np.log(np.var(ez))).data
+        logpZ2 = cf.gaussian_nll(z, xp.zeros(z.shape), xp.zeros(z.shape)).data
+        # logpZ2 = cf.gaussian_nll(z, np.mean(z), np.log(np.var(z))).data
 
-        loss = b_norm + (logpZ2 / 2.0 + logpZ / 2.0 - fw_ldt)
+        logpZ = (10*logpZ2 + logpZ1)/11
+        # loss =  1000* b_norm + logpZ * 0.5 - fw_ldt
+        loss = b_norm + 0.01 * (logpZ - fw_ldt)
 
+        # print(b_norm, xp.linalg.norm(b.data))
         epsilon.cleargrads()
         loss.backward()
         optimizer.update(training_step)
         training_step += 1
 
-        z_s.append(ez.get())
+        z_s.append(z.get())
         b_s.append(cupy.asnumpy(b.data))
         loss_s.append(_float(loss))
         logpZ_s.append(_float(logpZ))

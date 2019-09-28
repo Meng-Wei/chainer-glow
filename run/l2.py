@@ -155,9 +155,14 @@ def main():
 
             with self.init_scope():
                 self.b = chainer.Parameter(initializers.Normal(), shape)
+                self.m = chainer.Parameter(initializers.uniform(), (shape[1]/8, shape[1]/8))
         
         def forward(self, x):
             b = cf.tanh(self.b)
+            for i in range(self.m.shape[0]):
+                for j in range(self.m.shape[1]):
+                    b[:, i*8:(i+1)*8, j*8:(j+1)*8] *= m[i, j]
+
             cur_x = cf.add(x, b)
 
             z, logdet = self.encoder.forward_step(cur_x)
@@ -167,7 +172,8 @@ def main():
                 ez.append(zi.data.reshape(-1,))
             ez = np.concatenate(ez)
 
-            return ez, z, logdet, cf.batch_l2_norm_squared(self.b), self.b * 1, cur_x
+            # return ez, z, logdet, cf.batch_l2_norm_squared(self.b), self.b * 1, cur_x, self.m*1
+            return ez, z, logdet, cf.batch_l2_norm_squared(b), self.b*1, cur_x, self.m*1
 
         def save(self, path):
             filename = 'loss_model.hdf5'
@@ -193,10 +199,11 @@ def main():
     loss_s = []
     logpZ_s = []
     logDet_s = []
+    m_s = []
     j = 0
 
     for iteration in range(args.total_iteration):
-        z, zs, fw_ldt, b_norm, b, cur_x = epsilon.forward(x)            
+        z, zs, fw_ldt, b_norm, b, cur_x, m = epsilon.forward(x)            
         fw_ldt -= math.log(num_bins_x) * num_pixels
 
         logpZ1 = 0
@@ -218,6 +225,7 @@ def main():
 
         z_s.append(z.get())
         b_s.append(cupy.asnumpy(b.data))
+        m_s.append(cupy.asnumpy(m.data))
         loss_s.append(_float(loss))
         logpZ_s.append(_float(logpZ))
         logDet_s.append(_float(fw_ldt))
@@ -241,11 +249,13 @@ def main():
             np.save(args.ckpt + '/'+str(j)+'logDet.npy', logDet_s)
             cur_x = make_uint8(cur_x[0].data, num_bins_x)
             np.save(args.ckpt + '/'+str(j)+'image.npy', cur_x)
+            np.save(args.ckpt + '/'+str(j)+'m.npy', m_s)
             z_s = []
             b_s = []
             loss_s = []
             logpZ_s = []
             logDet_s = []
+            m_s = []
             j += 1
             epsilon.save(args.ckpt)
 
