@@ -129,7 +129,7 @@ def main():
     x = preprocess(x, hyperparams.num_bits_x)
     x = make_uint8(x, num_bins_x)
     img_x = Image.fromarray(x)
-    img_x.save('x.img')
+    img_x.save('x.png')
     print("reach here")
 
     x = to_gpu(xp.expand_dims(x, axis=0))
