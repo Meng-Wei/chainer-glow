@@ -161,11 +161,7 @@ def main():
         def forward(self, x):
             b = cf.tanh(self.b)
             m = cf.repeat(self.m, 8, axis=1)
-            print(m.shape)
-            print(m)
-            m = cf.repeat(self.m, 8, axis=0)
-            print(m.shape)
-            print(m)
+            m = cf.repeat(m, 8, axis=0)
             # for i in range(self.m.shape[0]):
             #     for j in range(self.m.shape[1]):
             #         b[:, i*8:(i+1)*8, j*8:(j+1)*8] *= self.m[i, j]
