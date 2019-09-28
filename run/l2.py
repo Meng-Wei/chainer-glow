@@ -206,7 +206,7 @@ def main():
         for (zi, mean, ln_var) in zs:
             logpZ1 += cf.gaussian_nll(zi, mean, ln_var)
             if z_index == 0:
-                print(mean.shape, ln_var.shape)
+                print(mean[0,0,0,:5].data, ln_var[0,0,0,:5].data)
             z_index += 1
             
         # logpZ2 = cf.gaussian_nll(z, xp.zeros(z.shape), xp.zeros(z.shape)).data
