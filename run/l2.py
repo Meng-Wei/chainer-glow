@@ -162,7 +162,7 @@ def main():
 
             m = cf.repeat(self.m, 8, axis=2)
             m = cf.repeat(m, 8, axis=1)
-            m = cf.relu(m)
+            m = cf.sigmoid(m)
 
             b = b * m 
             cur_x = cf.add(x, b)
