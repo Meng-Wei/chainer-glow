@@ -149,7 +149,7 @@ def main():
     # print(fw_ldt, logpZ, logpZ2)
 
     # Construct epsilon
-    class eps(chainer.ChainList):
+    class eps(chainer.Chain):
         def __init__(self, shape, glow_encoder):
             super().__init__()
             self.encoder = glow_encoder
