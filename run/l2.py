@@ -155,14 +155,22 @@ def main():
 
             with self.init_scope():
                 self.b = chainer.Parameter(initializers.Normal(), shape)
+                # self.m = chainer.Parameter(initializers.Uniform(), (shape[2], shape[3]))
                 self.m = chainer.Parameter(initializers.Uniform(), (16, 16))
         
         def forward(self, x):
             b = cf.tanh(self.b)
-            for i in range(self.m.shape[0]):
-                for j in range(self.m.shape[1]):
-                    b[:, i*8:(i+1)*8, j*8:(j+1)*8] *= self.m[i, j]
+            m = cf.repeat(self.m, 8, axis=1)
+            print(m.shape)
+            print(m)
+            m = cf.repeat(self.m, 8, axis=0)
+            print(m.shape)
+            print(m)
+            # for i in range(self.m.shape[0]):
+            #     for j in range(self.m.shape[1]):
+            #         b[:, i*8:(i+1)*8, j*8:(j+1)*8] *= self.m[i, j]
 
+            b = b * m
             cur_x = cf.add(x, b)
 
             z, logdet = self.encoder.forward_step(cur_x)
