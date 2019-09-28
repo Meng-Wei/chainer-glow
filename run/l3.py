@@ -193,7 +193,7 @@ def main():
         epsilon.to_gpu()
 
     # optimizer = Optimizer(epsilon)
-    optimizer = optimizers.Adam.setup(epsilon)
+    optimizer = optimizers.Adam().setup(epsilon)
     print('init finish')
 
     training_step = 0
