@@ -136,10 +136,7 @@ def main():
 
             zs, logdet = self.encoder.forward_step(cur_x)
 
-            z = []
-            for (zi, mean, ln_var) in zs:
-                z.append(zi.data.reshape(-1,))
-            z = np.concatenate(z)
+            z = merge_factorized_z(zs)
 
             # return z, zs, logdet, cf.batch_l2_norm_squared(b), xp.tanh(self.b.data*1), cur_x, m
             return z, zs, logdet, xp.sum(xp.abs(b.data)), xp.tanh(self.b.data*1), m, cur_x
@@ -177,7 +174,6 @@ def main():
     for iteration in range(args.total_iteration):
         epsilon.cleargrads()
         z, zs, fw_ldt, b_norm, b, m, cur_x = epsilon.forward(x)
-        print(cur_x.shape)
 
         fw_ldt -= math.log(num_bins_x) * num_pixels
 
