@@ -131,8 +131,8 @@ def main():
             m = cf.softplus(self.m)
             # m = cf.repeat(m, 16, axis=2)
             # m = cf.repeat(m, 16, axis=1)
-            m = cf.repeat(m, 8, axis=2)
-            m = cf.repeat(m, 8, axis=1)
+            m = cf.repeat(m, 16, axis=2)
+            m = cf.repeat(m, 16, axis=1)
 
             b = b * m 
             cur_x = cf.add(x, b)
