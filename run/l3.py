@@ -134,12 +134,15 @@ def main():
             b = b * m 
             cur_x = cf.add(x, b)
 
+            z = []
             zs, logdet = self.encoder.forward_step(cur_x)
+            for (zi, mean, ln_var) in zs:
+                z.append(zi)
 
-            # z = merge_factorized_z(zs)
+            z = merge_factorized_z(z)
 
             # return z, zs, logdet, cf.batch_l2_norm_squared(b), xp.tanh(self.b.data*1), cur_x, m
-            return zs, logdet, xp.sum(xp.abs(b.data)), xp.tanh(self.b.data*1), m, cur_x
+            return z, zs, logdet, xp.sum(xp.abs(b.data)), xp.tanh(self.b.data*1), m, cur_x
 
         def save(self, path):
             filename = 'loss_model.hdf5'
@@ -173,8 +176,7 @@ def main():
 
     for iteration in range(args.total_iteration):
         epsilon.cleargrads()
-        zs, fw_ldt, b_norm, b, m, cur_x = epsilon.forward(x)
-        z = merge_factorized_z(zs)
+        z, zs, fw_ldt, b_norm, b, m, cur_x = epsilon.forward(x)
 
         fw_ldt -= math.log(num_bins_x) * num_pixels
 
