@@ -198,7 +198,7 @@ def main():
                 factor_z.append(zi.data.reshape(zi.shape[0], -1))
             factor_z = xp.concatenate(factor_z, axis=1)
             negative_log_likelihood += cf.gaussian_nll(factor_z, xp.zeros(factor_z.shape, dtype='float32'), xp.zeros(factor_z.shape, dtype='float32'))
-            loss = (negative_log_likelihood * 0.5 + kld) / args.batch_size - logdet
+            loss = (negative_log_likelihood + kld) / args.batch_size - logdet
             loss = loss / denom
 
             encoder.cleargrads()
@@ -211,7 +211,7 @@ def main():
             sum_nll += _float(negative_log_likelihood) / args.batch_size
             sum_kld += _float(kld) / args.batch_size
             printr(
-                "Iteration {}: Batch {} / {} - loss: {:.8f} - nll: {:.8f} - kld: {:.8f} - log_det: {:.8f}".
+                "Iteration {}: Batch {} / {} - loss: {:.8f} - nll: {:.8f} - kld: {:.8f} - log_det: {:.8f}\n".
                 format(
                     iteration + 1, batch_index + 1, len(iterator),
                     _float(loss),
@@ -226,7 +226,7 @@ def main():
         mean_kld = sum_kld / len(iterator)
         elapsed_time = time.time() - start_time
         print(
-            "\033[2KIteration {} - loss: {:.5f} - log_likelihood: {:.5f} - kld: {:.5f} - elapsed_time: {:.3f} min".
+            "\033[2KIteration {} - loss: {:.5f} - log_likelihood: {:.5f} - kld: {:.5f} - elapsed_time: {:.3f} min\n".
             format(iteration + 1, sum_loss / len(iterator), mean_log_likelihood,
                    mean_kld, elapsed_time / 60))
         encoder.save(args.snapshot_path)

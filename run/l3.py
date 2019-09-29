@@ -121,7 +121,7 @@ def main():
 
             with self.init_scope():
                 self.b = chainer.Parameter(initializers.Uniform(), shape)
-                self.m = chainer.Parameter(initializers.Uniform(), (3, 16, 16))
+                self.m = chainer.Parameter(initializers.Uniform(), (3, 8, 8))
         
         def forward(self, x):
             # b = cf.tanh(self.b) *0.5
@@ -129,10 +129,10 @@ def main():
 
             # Not sure if implementation is wrong
             m = cf.softplus(self.m)
-            # m = cf.repeat(m, 8, axis=2)
-            # m = cf.repeat(m, 8, axis=1)
+            m = cf.repeat(m, 16, axis=2)
+            m = cf.repeat(m, 16, axis=1)
 
-            # b = b * m 
+            b = b * m 
             cur_x = cf.add(x, b)
             # cur_x = cf.clip(cur_x, -0.5,0.5)
 
@@ -190,8 +190,7 @@ def main():
         # logpZ2 = cf.gaussian_nll(z, np.mean(z), np.log(np.var(z))).data
 
         logpZ = (logpZ2 + logpZ1)/2
-        # loss =  1000* b_norm + logpZ * 0.5 - fw_ldt
-        loss = b_norm + (logpZ - fw_ldt)
+        loss = 10 * b_norm + (logpZ - fw_ldt)
 
         loss.backward()
         optimizer.update()
@@ -237,8 +236,8 @@ def main():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        # "--snapshot-path", "-snapshot", type=str, default='/home/data1/meng/chainer/snapshot_128')
-        "--snapshot-path", "-snapshot", type=str, default='s1')
+        "--snapshot-path", "-snapshot", type=str, default='/home/data1/meng/chainer/snapshot_128')
+        # "--snapshot-path", "-snapshot", type=str, default='snapshot')
     parser.add_argument("--gpu-device", "-gpu", type=int, default=1)
     parser.add_argument('--ckpt', type=str, required=True)
     parser.add_argument("--total-iteration", "-iter", type=int, default=1000)
