@@ -229,9 +229,10 @@ def main():
             np.save(args.ckpt + '/'+str(j)+'image.npy', cur_x)
             np.save(args.ckpt + '/'+str(j)+'m.npy', m_s)
             
-            rx, _ = encoder.reverse().reverse_step(zs)
-            rx_img = make_uint8(rx.data[0], num_bins_x)
-            np.save(args.ckpt + '/'+str(j)+'res.npy', rx_img)
+            with encoder.reverse() as decoder:
+                rx, _ = decoder.reverse_step(zs)
+                rx_img = make_uint8(rx.data[0], num_bins_x)
+                np.save(args.ckpt + '/'+str(j)+'res.npy', rx_img)
             z_s = []
             b_s = []
             loss_s = []
