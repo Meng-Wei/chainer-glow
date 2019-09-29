@@ -100,18 +100,18 @@ def main():
     x = to_gpu(xp.expand_dims(x, axis=0))
     x += xp.random.uniform(0, 1.0/num_bins_x, size=x.shape)
 
-    # z, fw_ldt = encoder.forward_step(x)        
-    # fw_ldt -= math.log(num_bins_x) * num_pixels
+    z, fw_ldt = encoder.forward_step(x)        
+    fw_ldt -= math.log(num_bins_x) * num_pixels
     
-    # logpZ = 0
-    # ez = []
-    # for (zi, mean, ln_var) in z:
-    #     logpZ += cf.gaussian_nll(zi, mean, ln_var)
-    #     ez.append(zi.data.reshape(-1,))
-    # ez = np.concatenate(ez)
-    # logpZ2 = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
+    logpZ = 0
+    ez = []
+    for (zi, mean, ln_var) in z:
+        logpZ += cf.gaussian_nll(zi, mean, ln_var)
+        ez.append(zi.data.reshape(-1,))
+    ez = np.concatenate(ez)
+    logpZ2 = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
 
-    # print(fw_ldt, logpZ, logpZ2)
+    print(fw_ldt, logpZ, logpZ2)
 
     # Construct epsilon
     class eps(chainer.Chain):
