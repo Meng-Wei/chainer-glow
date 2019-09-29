@@ -129,8 +129,10 @@ def main():
 
             # Not sure if implementation is wrong
             m = cf.softplus(self.m)
-            m = cf.repeat(m, 16, axis=2)
-            m = cf.repeat(m, 16, axis=1)
+            # m = cf.repeat(m, 16, axis=2)
+            # m = cf.repeat(m, 16, axis=1)
+            m = cf.repeat(m, 8, axis=2)
+            m = cf.repeat(m, 8, axis=1)
 
             b = b * m 
             cur_x = cf.add(x, b)
@@ -236,7 +238,8 @@ def main():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--snapshot-path", "-snapshot", type=str, default='/home/data1/meng/chainer/snapshot_128')
+        # "--snapshot-path", "-snapshot", type=str, default='/home/data1/meng/chainer/snapshot_128')
+        "--snapshot-path", "-snapshot", type=str, default='/home/data1/meng/chainer/snapshot_64')
         # "--snapshot-path", "-snapshot", type=str, default='snapshot')
     parser.add_argument("--gpu-device", "-gpu", type=int, default=1)
     parser.add_argument('--ckpt', type=str, required=True)
