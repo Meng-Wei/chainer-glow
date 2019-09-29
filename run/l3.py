@@ -159,7 +159,7 @@ def main():
         epsilon.to_gpu()
 
     # optimizer = Optimizer(epsilon)
-    optimizer = optimizers.Adam(alpha=0.0001).setup(epsilon)
+    optimizer = optimizers.Adam().setup(epsilon)
     epsilon.b.update_rule.hyperparam.lr = 0.001
     epsilon.m.update_rule.hyperparam.lr = 0.1
     print('init finish')
