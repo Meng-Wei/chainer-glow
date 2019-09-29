@@ -124,7 +124,7 @@ def main():
                 self.m = chainer.Parameter(initializers.Uniform(), (3, 8, 8))
         
         def forward(self, x):
-            # b = cf.tanh(self.b) *0.5
+            b = cf.tanh(self.b) *0.5
             b = self.b
 
             # Not sure if implementation is wrong
@@ -136,7 +136,7 @@ def main():
 
             b = b * m 
             cur_x = cf.add(x, b)
-            # cur_x = cf.clip(cur_x, -0.5,0.5)
+            cur_x = cf.clip(cur_x, -0.5,0.5)
 
             z = []
             zs, logdet = self.encoder.forward_step(cur_x)
@@ -163,7 +163,8 @@ def main():
         epsilon.to_gpu()
 
     # optimizer = Optimizer(epsilon)
-    optimizer = optimizers.Adam(alpha=0.0005).setup(epsilon)
+    # optimizer = optimizers.Adam(alpha=0.0005).setup(epsilon)
+    optimizer = optimizers.SGD().setup(epsilon)
     epsilon.b.update_rule.hyperparam.lr = 0.001
     epsilon.m.update_rule.hyperparam.lr = 0.1
     print('init finish')
