@@ -177,6 +177,7 @@ def main():
     for iteration in range(args.total_iteration):
         epsilon.cleargrads()
         z, zs, fw_ldt, b_norm, b, m, cur_x = epsilon.forward(x)
+        print(cur_x.shape)
 
         fw_ldt -= math.log(num_bins_x) * num_pixels
 
@@ -189,7 +190,7 @@ def main():
 
         logpZ = (logpZ2 + logpZ1)/2
         # loss =  1000* b_norm + logpZ * 0.5 - fw_ldt
-        loss = b_norm - (logpZ + fw_ldt) ** 2
+        loss = b_norm + (logpZ - fw_ldt)
 
         loss.backward()
         optimizer.update()
