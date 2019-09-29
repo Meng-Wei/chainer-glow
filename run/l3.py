@@ -159,7 +159,7 @@ def main():
         epsilon.to_gpu()
 
     # optimizer = Optimizer(epsilon)
-    optimizer = optimizers.Adam().setup(epsilon)
+    optimizer = optimizers.Adam(alpha=0.0005).setup(epsilon)
     epsilon.b.update_rule.hyperparam.lr = 0.001
     epsilon.m.update_rule.hyperparam.lr = 0.1
     print('init finish')
@@ -235,7 +235,8 @@ def main():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--snapshot-path", "-snapshot", type=str, default='/home/data1/meng/chainer/snapshot_128')
+        # "--snapshot-path", "-snapshot", type=str, default='/home/data1/meng/chainer/snapshot_128')
+        "--snapshot-path", "-snapshot", type=str, default='snapshot')
     parser.add_argument("--gpu-device", "-gpu", type=int, default=1)
     parser.add_argument('--ckpt', type=str, required=True)
     parser.add_argument("--total-iteration", "-iter", type=int, default=1000)
