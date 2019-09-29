@@ -94,7 +94,7 @@ def main():
         encoder.to_gpu()
 
     # Load picture
-    x = np.array(Image.open('bg/' +args.img) ).astype('float32')
+    x = np.array(Image.open(args.img) ).astype('float32')
     x = preprocess(x, hyperparams.num_bits_x)
 
     x = to_gpu(xp.expand_dims(x, axis=0))
@@ -125,12 +125,11 @@ def main():
         
         def forward(self, x):
             b = cf.tanh(self.b) *0.5
-            b = self.b
 
             # Not sure if implementation is wrong
             m = cf.softplus(self.m)
-            # m = cf.repeat(m, 16, axis=2)
-            # m = cf.repeat(m, 16, axis=1)
+            # m = cf.repeat(m, 8, axis=2)
+            # m = cf.repeat(m, 8, axis=1)
             m = cf.repeat(m, 16, axis=2)
             m = cf.repeat(m, 16, axis=1)
 
@@ -207,12 +206,14 @@ def main():
         logDet_s.append(_float(fw_ldt))
 
         printr(
-            "Iteration {}: loss: {:.6f} - b_norm: {:.6f} - logpZ: {:.6f} - log_det: {:.6f} - logpX: {:.6f}\n".
+            "Iteration {}: loss: {:.6f} - b_norm: {:.6f} - logpZ: {:.6f} - logpZ1: {:.6f} - logpZ2: {:.6f} - log_det: {:.6f} - logpX: {:.6f}\n".
             format(
                 iteration + 1,
                 _float(loss),
                 _float(b_norm),
                 _float(logpZ),
+                _float(logpZ1),
+                _float(logpZ2),
                 _float(fw_ldt),
                 _float(logpZ) - _float(fw_ldt)
             )
@@ -227,6 +228,10 @@ def main():
             cur_x = make_uint8(cur_x[0].data, num_bins_x)
             np.save(args.ckpt + '/'+str(j)+'image.npy', cur_x)
             np.save(args.ckpt + '/'+str(j)+'m.npy', m_s)
+            
+            rx, _ = encoder.reverse().reverse_step(zs)
+            rx_img = make_uint8(rx.data[0], num_bins_x)
+            np.save(args.ckpt + '/'+str(j)+'res.npy', rx_img)
             z_s = []
             b_s = []
             loss_s = []
@@ -239,8 +244,8 @@ def main():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        # "--snapshot-path", "-snapshot", type=str, default='/home/data1/meng/chainer/snapshot_128')
-        "--snapshot-path", "-snapshot", type=str, default='/home/data1/meng/chainer/snapshot_64')
+        "--snapshot-path", "-snapshot", type=str, default='/home/data1/meng/chainer/snapshot_128')
+        # "--snapshot-path", "-snapshot", type=str, default='/home/data1/meng/chainer/snapshot_64')
         # "--snapshot-path", "-snapshot", type=str, default='snapshot')
     parser.add_argument("--gpu-device", "-gpu", type=int, default=1)
     parser.add_argument('--ckpt', type=str, required=True)
