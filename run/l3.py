@@ -100,18 +100,18 @@ def main():
     x = to_gpu(xp.expand_dims(x, axis=0))
     x += xp.random.uniform(0, 1.0/num_bins_x, size=x.shape)
 
-    z, fw_ldt = encoder.forward_step(x)        
-    fw_ldt -= math.log(num_bins_x) * num_pixels
+    # z, fw_ldt = encoder.forward_step(x)        
+    # fw_ldt -= math.log(num_bins_x) * num_pixels
     
-    logpZ = 0
-    ez = []
-    for (zi, mean, ln_var) in z:
-        logpZ += cf.gaussian_nll(zi, mean, ln_var)
-        ez.append(zi.data.reshape(-1,))
-    ez = np.concatenate(ez)
-    logpZ2 = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
+    # logpZ = 0
+    # ez = []
+    # for (zi, mean, ln_var) in z:
+    #     logpZ += cf.gaussian_nll(zi, mean, ln_var)
+    #     ez.append(zi.data.reshape(-1,))
+    # ez = np.concatenate(ez)
+    # logpZ2 = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
 
-    print(fw_ldt, logpZ, logpZ2)
+    # print(fw_ldt, logpZ, logpZ2)
 
     # Construct epsilon
     class eps(chainer.Chain):
@@ -124,15 +124,17 @@ def main():
                 self.m = chainer.Parameter(initializers.Uniform(), (3, 16, 16))
         
         def forward(self, x):
-            b = cf.tanh(self.b) *0.5
+            # b = cf.tanh(self.b) *0.5
+            b = self.b
 
             # Not sure if implementation is wrong
             m = cf.softplus(self.m)
-            m = cf.repeat(m, 8, axis=2)
-            m = cf.repeat(m, 8, axis=1)
+            # m = cf.repeat(m, 8, axis=2)
+            # m = cf.repeat(m, 8, axis=1)
 
-            b = b * m 
+            # b = b * m 
             cur_x = cf.add(x, b)
+            cur_x = cf.clip(cur_x, -0.5,0.5)
 
             z = []
             zs, logdet = self.encoder.forward_step(cur_x)
