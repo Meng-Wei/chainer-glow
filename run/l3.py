@@ -94,7 +94,7 @@ def main():
         encoder.to_gpu()
 
     # Load picture
-    x = np.array(Image.open('bg/1.png')).astype('float32')
+    x = np.array(Image.open('bg/' +args.img) ).astype('float32')
     x = preprocess(x, hyperparams.num_bits_x)
 
     x = to_gpu(xp.expand_dims(x, axis=0))
@@ -124,7 +124,7 @@ def main():
                 self.m = chainer.Parameter(initializers.Uniform(), (3, 16, 16))
         
         def forward(self, x):
-            b = cf.tanh(self.b)
+            b = cf.tanh(self.b) *0.5
 
             # Not sure if implementation is wrong
             m = cf.softplus(self.m)
@@ -240,5 +240,6 @@ if __name__ == "__main__":
     parser.add_argument("--gpu-device", "-gpu", type=int, default=1)
     parser.add_argument('--ckpt', type=str, required=True)
     parser.add_argument("--total-iteration", "-iter", type=int, default=1000)
+    parser.add_argument("-img", type=str, required=True)
     args = parser.parse_args()
     main()
