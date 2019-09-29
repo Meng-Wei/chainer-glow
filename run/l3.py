@@ -185,7 +185,9 @@ def main():
         fw_ldt -= math.log(num_bins_x) * num_pixels
 
         logpZ1 = 0
+        factor_z = []
         for (zi, mean, ln_var) in zs:
+            factor_z.append(zi.data)
             logpZ1 += cf.gaussian_nll(zi, mean, ln_var)
             
         logpZ2 = cf.gaussian_nll(z, xp.zeros(z.shape), xp.zeros(z.shape)).data
@@ -230,7 +232,7 @@ def main():
             np.save(args.ckpt + '/'+str(j)+'m.npy', m_s)
             
             with encoder.reverse() as decoder:
-                rx, _ = decoder.reverse_step(zs)
+                rx, _ = decoder.reverse_step(factor_z)
                 rx_img = make_uint8(rx.data[0], num_bins_x)
                 np.save(args.ckpt + '/'+str(j)+'res.npy', rx_img)
             z_s = []
