@@ -134,7 +134,7 @@ def main():
 
             # b = b * m 
             cur_x = cf.add(x, b)
-            cur_x = cf.clip(cur_x, -0.5,0.5)
+            # cur_x = cf.clip(cur_x, -0.5,0.5)
 
             z = []
             zs, logdet = self.encoder.forward_step(cur_x)
@@ -237,8 +237,8 @@ def main():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--snapshot-path", "-snapshot", type=str, default='/home/data1/meng/chainer/snapshot_128')
-        # "--snapshot-path", "-snapshot", type=str, default='snapshot')
+        # "--snapshot-path", "-snapshot", type=str, default='/home/data1/meng/chainer/snapshot_128')
+        "--snapshot-path", "-snapshot", type=str, default='s1')
     parser.add_argument("--gpu-device", "-gpu", type=int, default=1)
     parser.add_argument('--ckpt', type=str, required=True)
     parser.add_argument("--total-iteration", "-iter", type=int, default=1000)
