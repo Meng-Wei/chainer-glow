@@ -125,28 +125,27 @@ def main():
                 self.m = chainer.Parameter(initializers.One(), (3, 8, 8))
         
         def forward(self, x):
-            b_ = self.b
+            b_ = cf.tanh(self.b)
 
             # Not sure if implementation is wrong
-            m = cf.softplus(self.m)
+            m_ = cf.softplus(self.m)
             # m = cf.repeat(m, 8, axis=2)
             # m = cf.repeat(m, 8, axis=1)
-            # m = cf.repeat(m, 16, axis=2)
-            # m = cf.repeat(m, 16, axis=1)
+            m_ = cf.repeat(m_, 16, axis=2)
+            m_ = cf.repeat(m_, 16, axis=1)
 
-            # b = b * m 
-            cur_x = cf.add(x, b_)
-            cur_x = cf.clip(cur_x, -0.5, 0.5)
+            b_ = b_ * m_ 
+            x_ = cf.add(x, b_)
+            x_ = cf.clip(x_, -0.5, 0.5)
 
             z = []
-            zs, logdet = self.encoder.forward_step(cur_x)
+            zs, logdet = self.encoder.forward_step(x_)
             for (zi, mean, ln_var) in zs:
                 z.append(zi)
 
             z = merge_factorized_z(z)
 
-            # return z, zs, logdet, cf.batch_l2_norm_squared(b), xp.tanh(self.b.data*1), cur_x, m
-            return z, zs, logdet, xp.sum(xp.abs(b_.data)), xp.tanh(self.b.data*1), self.m, cur_x
+            return z, zs, logdet, xp.sum(xp.abs(b_.data)), xp.tanh(self.b.data * 1), m_, x_
 
         def save(self, path):
             filename = 'loss_model.hdf5'
@@ -180,9 +179,11 @@ def main():
     j = 0
 
     for iteration in range(args.total_iteration):
-        z, zs, fw_ldt, b_norm, b, m, cur_x = epsilon.forward(x)
+        z, zs, fw_ldt, b_norm, cur_b, cur_m, cur_x = epsilon.forward(x)
 
         epsilon.cleargrads()
+
+        # Construct loss term:
         fw_ldt -= math.log(num_bins_x) * num_pixels
 
         logpZ1 = 0
@@ -194,7 +195,7 @@ def main():
         logpZ2 = cf.gaussian_nll(z, xp.zeros(z.shape), xp.zeros(z.shape)).data
         # logpZ2 = cf.gaussian_nll(z, np.mean(z), np.log(np.var(z))).data
 
-        logpZ = (logpZ2 *1 + logpZ1 *1)
+        logpZ = (logpZ2 + logpZ1) * 0.5
         loss = 10 * b_norm + (logpZ - fw_ldt)
 
         loss.backward()
@@ -202,8 +203,8 @@ def main():
         training_step += 1
 
         z_s.append(z.get())
-        b_s.append(cupy.asnumpy(b))
-        m_s.append(cupy.asnumpy(m.data))
+        b_s.append(cupy.asnumpy(cur_b))
+        m_s.append(cupy.asnumpy(cur_m.data))
         loss_s.append(_float(loss))
         logpZ_s.append(_float(logpZ))
         logDet_s.append(_float(fw_ldt))
@@ -232,10 +233,11 @@ def main():
             np.save(args.ckpt + '/'+str(j)+'image.npy', cur_x)
             np.save(args.ckpt + '/'+str(j)+'m.npy', m_s)
             
-            # with encoder.reverse() as decoder:
-            #     rx, _ = decoder.reverse_step(factor_z)
-            #     rx_img = make_uint8(rx.data[0], num_bins_x)
-            #     np.save(args.ckpt + '/'+str(j)+'res.npy', rx_img)
+            with encoder.reverse() as decoder:
+                rx, _ = decoder.reverse_step(factor_z)
+                rx_img = make_uint8(rx.data[0], num_bins_x)
+                np.save(args.ckpt + '/'+str(j)+'res.npy', rx_img)
+
             z_s = []
             b_s = []
             loss_s = []
@@ -250,7 +252,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "--snapshot-path", "-snapshot", type=str, default='/home/data1/meng/chainer/snapshot_128')
         # "--snapshot-path", "-snapshot", type=str, default='/home/data1/meng/chainer/snapshot_64')
-        # "--snapshot-path", "-snapshot", type=str, default='snapshot')
     parser.add_argument("--gpu-device", "-gpu", type=int, default=1)
     parser.add_argument('--ckpt', type=str, required=True)
     parser.add_argument("--total-iteration", "-iter", type=int, default=1000)
