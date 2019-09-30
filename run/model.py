@@ -234,7 +234,7 @@ class Glow(chainer.ChainList):
             except Exception as error:
                 print(error)
 
-    def forward_step(self, x):
+    def forward_step(self, x, b):
         z = []
         sum_logdet = 0
         out = x
@@ -245,7 +245,9 @@ class Glow(chainer.ChainList):
                 out, squeeze_factor=self.hyperparams.squeeze_factor)
             
             # Add noise after 
-            # if i == 0:
+            if i == 0:
+                print(out.shape)
+                out += b
                 
             sum_logdet += logdet
             z.append(zi_mean_lnvar)
