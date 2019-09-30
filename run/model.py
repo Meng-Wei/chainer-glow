@@ -246,7 +246,6 @@ class Glow(chainer.ChainList):
             
             # Add noise after 
             if i == 0:
-                print(out.shape)
                 out += b
                 
             sum_logdet += logdet

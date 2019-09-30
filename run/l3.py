@@ -125,7 +125,8 @@ def main():
                 self.m = chainer.Parameter(initializers.One(), (3, 8, 8))
         
         def forward(self, x):
-            b = cf.tanh(self.b) * 0.5
+            # b = cf.tanh(self.b) * 0.5
+            b = self.b
 
             # Not sure if implementation is wrong
             m = cf.softplus(self.m)
@@ -146,7 +147,7 @@ def main():
             z = merge_factorized_z(z)
 
             # return z, zs, logdet, cf.batch_l2_norm_squared(b), xp.tanh(self.b.data*1), cur_x, m
-            return z, zs, logdet, xp.sum(xp.abs(b.data)), xp.tanh(self.b.data*1), m, x
+            return z, zs, logdet, xp.sum(xp.abs(b.data)), self.b.data * 1, m, x
 
         def save(self, path):
             filename = 'loss_model.hdf5'
@@ -195,7 +196,7 @@ def main():
         # logpZ2 = cf.gaussian_nll(z, np.mean(z), np.log(np.var(z))).data
 
         logpZ = (logpZ2 + logpZ1)/2
-        loss = 10 * b_norm + (logpZ - fw_ldt)
+        loss = b_norm + (logpZ - fw_ldt)
 
         loss.backward()
         optimizer.update()
@@ -228,8 +229,8 @@ def main():
             np.save(args.ckpt + '/'+str(j)+'loss.npy', loss_s)
             np.save(args.ckpt + '/'+str(j)+'logpZ.npy', logpZ_s)
             np.save(args.ckpt + '/'+str(j)+'logDet.npy', logDet_s)
-            cur_x = make_uint8(cur_x[0].data, num_bins_x)
-            np.save(args.ckpt + '/'+str(j)+'image.npy', cur_x)
+            # cur_x = make_uint8(cur_x[0].data, num_bins_x)
+            # np.save(args.ckpt + '/'+str(j)+'image.npy', cur_x)
             np.save(args.ckpt + '/'+str(j)+'m.npy', m_s)
             
             with encoder.reverse() as decoder:
