@@ -136,7 +136,7 @@ def main():
 
             # b = b * m 
             x_ = cf.add(x, b_)
-            x_ = cf.clip(cur_x, -0.5, 0.5)
+            x_ = cf.clip(x_, -0.5, 0.5)
 
             z = []
             zs, logdet = self.encoder.forward_step(cur_x)
