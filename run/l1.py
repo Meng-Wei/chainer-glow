@@ -135,18 +135,18 @@ def main():
             # m = cf.repeat(m, 16, axis=1)
 
             # b = b * m 
-            x_ = cf.add(x, b_)
-            x_ = cf.clip(x_, -0.5, 0.5)
+            cur_x = cf.add(x, b_)
+            cur_x = cf.clip(cur_x, -0.5, 0.5)
 
             z = []
-            zs, logdet = self.encoder.forward_step(x_)
+            zs, logdet = self.encoder.forward_step(cur_x)
             for (zi, mean, ln_var) in zs:
                 z.append(zi)
 
             z = merge_factorized_z(z)
 
             # return z, zs, logdet, cf.batch_l2_norm_squared(b), xp.tanh(self.b.data*1), cur_x, m
-            return z, zs, logdet, xp.sum(xp.abs(b_.data)), xp.tanh(self.b.data*1), self.m, x_
+            return z, zs, logdet, xp.sum(xp.abs(b_.data)), xp.tanh(self.b.data*1), self.m, cur_x
 
         def save(self, path):
             filename = 'loss_model.hdf5'
