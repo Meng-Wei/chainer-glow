@@ -123,7 +123,7 @@ class Block(chainer.ChainList):
 
         if self.split_output:
             # Add noise here:
-            if es != None:
+            if es is not None:
                 out += es
             zi, out = split_channel(out)
             prior_in = out
