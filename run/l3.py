@@ -121,7 +121,7 @@ def main():
             self.encoder = glow_encoder
 
             with self.init_scope():
-                self.b = chainer.Parameter(initializers.Zero(), (6, 32, 32))
+                self.b = chainer.Parameter(initializers.Zero(), (1, 6, 64, 64))
                 self.m = chainer.Parameter(initializers.One(), (3, 8, 8))
         
         def forward(self, x):
