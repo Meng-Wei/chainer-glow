@@ -100,6 +100,7 @@ def main():
     x = to_gpu(xp.expand_dims(x, axis=0))
     x += xp.random.uniform(0, 1.0/num_bins_x, size=x.shape)
 
+    # # Print this image info:
     # z, fw_ldt = encoder.forward_step(x)        
     # fw_ldt -= math.log(num_bins_x) * num_pixels
     
@@ -120,11 +121,11 @@ def main():
             self.encoder = glow_encoder
 
             with self.init_scope():
-                self.b = chainer.Parameter(initializers.Uniform(), shape)
-                self.m = chainer.Parameter(initializers.Uniform(), (3, 8, 8))
+                self.b = chainer.Parameter(initializers.Zero(), shape)
+                self.m = chainer.Parameter(initializers.One(), (3, 8, 8))
         
         def forward(self, x):
-            b = cf.tanh(self.b) *0.5
+            b = cf.tanh(self.b) * 0.5
 
             # Not sure if implementation is wrong
             m = cf.softplus(self.m)

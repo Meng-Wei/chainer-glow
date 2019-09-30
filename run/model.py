@@ -239,9 +239,14 @@ class Glow(chainer.ChainList):
         sum_logdet = 0
         out = x
 
-        for block in self.blocks:
+        for i in range(self.blocks):
+            block = self.blocks[i]
             out, zi_mean_lnvar, logdet = block.forward_step(
                 out, squeeze_factor=self.hyperparams.squeeze_factor)
+            
+            # Add noise after 
+            # if i == 0:
+                
             sum_logdet += logdet
             z.append(zi_mean_lnvar)
 
