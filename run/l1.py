@@ -125,18 +125,18 @@ def main():
                 self.m = chainer.Parameter(initializers.One(), (3, 8, 8))
         
         def forward(self, x):
-            b = cf.tanh(self.b) * 0.5
+            b_ = self.b
 
             # Not sure if implementation is wrong
             m = cf.softplus(self.m)
             # m = cf.repeat(m, 8, axis=2)
             # m = cf.repeat(m, 8, axis=1)
-            m = cf.repeat(m, 16, axis=2)
-            m = cf.repeat(m, 16, axis=1)
+            # m = cf.repeat(m, 16, axis=2)
+            # m = cf.repeat(m, 16, axis=1)
 
-            b = b * m 
-            cur_x = cf.add(x, b)
-            cur_x = cf.clip(cur_x, -0.5,0.5)
+            # b = b * m 
+            cur_x = cf.add(x, b_)
+            cur_x = cf.clip(cur_x, -0.5, 0.5)
 
             z = []
             zs, logdet = self.encoder.forward_step(cur_x)
@@ -146,7 +146,7 @@ def main():
             z = merge_factorized_z(z)
 
             # return z, zs, logdet, cf.batch_l2_norm_squared(b), xp.tanh(self.b.data*1), cur_x, m
-            return z, zs, logdet, xp.sum(xp.abs(b.data)), xp.tanh(self.b.data*1), m, cur_x
+            return z, zs, logdet, xp.sum(xp.abs(b_.data)), xp.tanh(self.b.data*1), self.m, cur_x
 
         def save(self, path):
             filename = 'loss_model.hdf5'
@@ -165,7 +165,7 @@ def main():
     # optimizer = Optimizer(epsilon)
     optimizer = optimizers.Adam(alpha=0.0005).setup(epsilon)
     # optimizer = optimizers.SGD().setup(epsilon)
-    epsilon.b.update_rule.hyperparam.lr = 0.001
+    epsilon.b.update_rule.hyperparam.lr = 0.0001
     epsilon.m.update_rule.hyperparam.lr = 0.1
     print('init finish')
 
@@ -180,9 +180,9 @@ def main():
     j = 0
 
     for iteration in range(args.total_iteration):
-        epsilon.cleargrads()
         z, zs, fw_ldt, b_norm, b, m, cur_x = epsilon.forward(x)
 
+        epsilon.cleargrads()
         fw_ldt -= math.log(num_bins_x) * num_pixels
 
         logpZ1 = 0
@@ -194,7 +194,7 @@ def main():
         logpZ2 = cf.gaussian_nll(z, xp.zeros(z.shape), xp.zeros(z.shape)).data
         # logpZ2 = cf.gaussian_nll(z, np.mean(z), np.log(np.var(z))).data
 
-        logpZ = (logpZ2 + logpZ1)/2
+        logpZ = (logpZ2 *1 + logpZ1 *1)
         loss = 10 * b_norm + (logpZ - fw_ldt)
 
         loss.backward()
