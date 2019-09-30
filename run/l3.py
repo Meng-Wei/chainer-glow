@@ -100,19 +100,30 @@ def main():
     x = to_gpu(xp.expand_dims(x, axis=0))
     x += xp.random.uniform(0, 1.0/num_bins_x, size=x.shape)
 
-    # # Print this image info:
-    # z, fw_ldt = encoder.forward_step(x)        
-    # fw_ldt -= math.log(num_bins_x) * num_pixels
+    # Print this image info:
+    b = xp.zeros((1,6,64,64))
+    z, fw_ldt = encoder.forward_step(x, b)        
+    fw_ldt -= math.log(num_bins_x) * num_pixels
     
-    # logpZ = 0
-    # ez = []
-    # for (zi, mean, ln_var) in z:
-    #     logpZ += cf.gaussian_nll(zi, mean, ln_var)
-    #     ez.append(zi.data.reshape(-1,))
-    # ez = np.concatenate(ez)
-    # logpZ2 = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
+    logpZ = 0
+    ez = []
+    factor_z = []
+    for (zi, mean, ln_var) in z:
+        factor_z.append(zi.data)
+        logpZ += cf.gaussian_nll(zi, mean, ln_var)
+        ez.append(zi.data.reshape(-1,))
+    
+    ez = np.concatenate(ez)
+    logpZ2 = cf.gaussian_nll(ez, xp.zeros(ez.shape), xp.zeros(ez.shape)).data
 
-    # print(fw_ldt, logpZ, logpZ2)
+    print(fw_ldt, logpZ, logpZ2)
+    with encoder.reverse() as decoder:
+        rx, _ = decoder.reverse_step(factor_z)
+        rx_img = make_uint8(rx.data[0], num_bins_x)
+        rx_img = Image.fromarray(rx_img)
+        rx_img.save('ori_revx.png')
+    
+    np.save('ori_z.npy', ez.get())
 
     # Construct epsilon
     class eps(chainer.Chain):
@@ -163,88 +174,88 @@ def main():
     if using_gpu:
         epsilon.to_gpu()
 
-    # optimizer = Optimizer(epsilon)
-    optimizer = optimizers.Adam().setup(epsilon)
-    # optimizer = optimizers.SGD().setup(epsilon)
-    epsilon.b.update_rule.hyperparam.lr = 0.01
-    epsilon.m.update_rule.hyperparam.lr = 0.1
-    print('init finish')
+    # # optimizer = Optimizer(epsilon)
+    # optimizer = optimizers.Adam().setup(epsilon)
+    # # optimizer = optimizers.SGD().setup(epsilon)
+    # epsilon.b.update_rule.hyperparam.lr = 0.01
+    # epsilon.m.update_rule.hyperparam.lr = 0.1
+    # print('init finish')
 
-    training_step = 0
+    # training_step = 0
 
-    z_s = []
-    b_s = []
-    loss_s = []
-    logpZ_s = []
-    logDet_s = []
-    m_s = []
-    j = 0
+    # z_s = []
+    # b_s = []
+    # loss_s = []
+    # logpZ_s = []
+    # logDet_s = []
+    # m_s = []
+    # j = 0
 
-    for iteration in range(args.total_iteration):
-        epsilon.cleargrads()
-        z, zs, fw_ldt, b_norm, b, m, cur_x = epsilon.forward(x)
+    # for iteration in range(args.total_iteration):
+    #     epsilon.cleargrads()
+    #     z, zs, fw_ldt, b_norm, b, m, cur_x = epsilon.forward(x)
 
-        fw_ldt -= math.log(num_bins_x) * num_pixels
+    #     fw_ldt -= math.log(num_bins_x) * num_pixels
 
-        logpZ1 = 0
-        factor_z = []
-        for (zi, mean, ln_var) in zs:
-            factor_z.append(zi.data)
-            logpZ1 += cf.gaussian_nll(zi, mean, ln_var)
+    #     logpZ1 = 0
+    #     factor_z = []
+    #     for (zi, mean, ln_var) in zs:
+    #         factor_z.append(zi.data)
+    #         logpZ1 += cf.gaussian_nll(zi, mean, ln_var)
             
-        logpZ2 = cf.gaussian_nll(z, xp.zeros(z.shape), xp.zeros(z.shape)).data
-        # logpZ2 = cf.gaussian_nll(z, np.mean(z), np.log(np.var(z))).data
+    #     logpZ2 = cf.gaussian_nll(z, xp.zeros(z.shape), xp.zeros(z.shape)).data
+    #     # logpZ2 = cf.gaussian_nll(z, np.mean(z), np.log(np.var(z))).data
 
-        logpZ = (logpZ2 + logpZ1)/2
-        loss = b_norm + (logpZ - fw_ldt)
+    #     logpZ = (logpZ2 + logpZ1)/2
+    #     loss = b_norm + (logpZ - fw_ldt)
 
-        loss.backward()
-        optimizer.update()
-        training_step += 1
+    #     loss.backward()
+    #     optimizer.update()
+    #     training_step += 1
 
-        z_s.append(z.get())
-        b_s.append(cupy.asnumpy(b))
-        m_s.append(cupy.asnumpy(m.data))
-        loss_s.append(_float(loss))
-        logpZ_s.append(_float(logpZ))
-        logDet_s.append(_float(fw_ldt))
+    #     z_s.append(z.get())
+    #     b_s.append(cupy.asnumpy(b))
+    #     m_s.append(cupy.asnumpy(m.data))
+    #     loss_s.append(_float(loss))
+    #     logpZ_s.append(_float(logpZ))
+    #     logDet_s.append(_float(fw_ldt))
 
-        printr(
-            "Iteration {}: loss: {:.6f} - b_norm: {:.6f} - logpZ: {:.6f} - logpZ1: {:.6f} - logpZ2: {:.6f} - log_det: {:.6f} - logpX: {:.6f}\n".
-            format(
-                iteration + 1,
-                _float(loss),
-                _float(b_norm),
-                _float(logpZ),
-                _float(logpZ1),
-                _float(logpZ2),
-                _float(fw_ldt),
-                _float(logpZ) - _float(fw_ldt)
-            )
-        )
+    #     printr(
+    #         "Iteration {}: loss: {:.6f} - b_norm: {:.6f} - logpZ: {:.6f} - logpZ1: {:.6f} - logpZ2: {:.6f} - log_det: {:.6f} - logpX: {:.6f}\n".
+    #         format(
+    #             iteration + 1,
+    #             _float(loss),
+    #             _float(b_norm),
+    #             _float(logpZ),
+    #             _float(logpZ1),
+    #             _float(logpZ2),
+    #             _float(fw_ldt),
+    #             _float(logpZ) - _float(fw_ldt)
+    #         )
+    #     )
 
-        if iteration % 100 == 99:
-            np.save(args.ckpt + '/'+str(j)+'z.npy', z_s)
-            np.save(args.ckpt + '/'+str(j)+'b.npy', b_s)
-            np.save(args.ckpt + '/'+str(j)+'loss.npy', loss_s)
-            np.save(args.ckpt + '/'+str(j)+'logpZ.npy', logpZ_s)
-            np.save(args.ckpt + '/'+str(j)+'logDet.npy', logDet_s)
-            # cur_x = make_uint8(cur_x[0].data, num_bins_x)
-            # np.save(args.ckpt + '/'+str(j)+'image.npy', cur_x)
-            np.save(args.ckpt + '/'+str(j)+'m.npy', m_s)
+    #     if iteration % 100 == 99:
+    #         np.save(args.ckpt + '/'+str(j)+'z.npy', z_s)
+    #         np.save(args.ckpt + '/'+str(j)+'b.npy', b_s)
+    #         np.save(args.ckpt + '/'+str(j)+'loss.npy', loss_s)
+    #         np.save(args.ckpt + '/'+str(j)+'logpZ.npy', logpZ_s)
+    #         np.save(args.ckpt + '/'+str(j)+'logDet.npy', logDet_s)
+    #         # cur_x = make_uint8(cur_x[0].data, num_bins_x)
+    #         # np.save(args.ckpt + '/'+str(j)+'image.npy', cur_x)
+    #         np.save(args.ckpt + '/'+str(j)+'m.npy', m_s)
             
-            with encoder.reverse() as decoder:
-                rx, _ = decoder.reverse_step(factor_z)
-                rx_img = make_uint8(rx.data[0], num_bins_x)
-                np.save(args.ckpt + '/'+str(j)+'res.npy', rx_img)
-            z_s = []
-            b_s = []
-            loss_s = []
-            logpZ_s = []
-            logDet_s = []
-            m_s = []
-            j += 1
-            epsilon.save(args.ckpt)
+    #         with encoder.reverse() as decoder:
+    #             rx, _ = decoder.reverse_step(factor_z)
+    #             rx_img = make_uint8(rx.data[0], num_bins_x)
+    #             np.save(args.ckpt + '/'+str(j)+'res.npy', rx_img)
+    #         z_s = []
+    #         b_s = []
+    #         loss_s = []
+    #         logpZ_s = []
+    #         logDet_s = []
+    #         m_s = []
+    #         j += 1
+    #         epsilon.save(args.ckpt)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
