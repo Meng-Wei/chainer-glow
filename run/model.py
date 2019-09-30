@@ -124,7 +124,9 @@ class Block(chainer.ChainList):
         if self.split_output:
             # Add noise here:
             if es is not None:
+                out = unsqueeze(out, factor=squeeze_factor)
                 out += es
+                out = squeeze(out)
             zi, out = split_channel(out)
             prior_in = out
         else:
