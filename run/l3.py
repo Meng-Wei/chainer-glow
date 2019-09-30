@@ -102,7 +102,7 @@ def main():
 
     if True:
         # Print this image info:
-        b = xp.zeros((1,6,64,64))
+        b = xp.zeros((1,3,128,128))
         z, fw_ldt = encoder.forward_step(x, b)        
         fw_ldt -= math.log(num_bins_x) * num_pixels
         
@@ -133,7 +133,7 @@ def main():
             self.encoder = glow_encoder
 
             with self.init_scope():
-                self.b = chainer.Parameter(initializers.Zero(), (1, 6, 64, 64))
+                self.b = chainer.Parameter(initializers.Zero(), (1, 3, 128, 128))
                 self.m = chainer.Parameter(initializers.One(), (3, 8, 8))
         
         def forward(self, x):

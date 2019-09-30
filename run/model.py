@@ -111,7 +111,7 @@ class Block(chainer.ChainList):
     def __getitem__(self, index):
         return self.flows[index]
 
-    def forward_step(self, x, squeeze_factor):
+    def forward_step(self, x, squeeze_factor, b=None):
         sum_logdet = 0
         out = x
 
@@ -122,6 +122,9 @@ class Block(chainer.ChainList):
             sum_logdet += logdet
 
         if self.split_output:
+            # Add noise here:
+            if b != None:
+                out += b
             zi, out = split_channel(out)
             prior_in = out
         else:
@@ -241,12 +244,13 @@ class Glow(chainer.ChainList):
 
         for i in range(len(self.blocks)):
             block = self.blocks[i]
-            out, zi_mean_lnvar, logdet = block.forward_step(
-                out, squeeze_factor=self.hyperparams.squeeze_factor)
-            
-            # Add noise after 
+
             if i == 0:
-                out += b
+                out, zi_mean_lnvar, logdet = block.forward_step(
+                    out, squeeze_factor=self.hyperparams.squeeze_factor, b=b)
+            else:
+                out, zi_mean_lnvar, logdet = block.forward_step(
+                    out, squeeze_factor=self.hyperparams.squeeze_factor)
                 
             sum_logdet += logdet
             z.append(zi_mean_lnvar)
