@@ -24,7 +24,8 @@ import glow
 
 from model import Glow, to_cpu, to_gpu
 from hyperparams import Hyperparameters
-from optimizer import Optimizer
+# from optimizer import Optimizer
+from chainer import optimizers
 
 def make_uint8(array, bins):
     if array.ndim == 4:
@@ -88,52 +89,18 @@ def main():
     num_bins_x = 2.0**hyperparams.num_bits_x
     num_pixels = 3 * hyperparams.image_size[0] * hyperparams.image_size[1]
 
-    if False:
-        assert args.dataset_format in ["png", "npy"]
-
-        files = Path(args.dataset_path).glob("*.{}".format(args.dataset_format))
-        if args.dataset_format == "png":
-            images = []
-            for filepath in files:
-                image = np.array(Image.open(filepath)).astype("float32")
-                image = preprocess(image, hyperparams.num_bits_x)
-                images.append(image)
-            assert len(images) > 0
-            images = np.asanyarray(images)
-        elif args.dataset_format == "npy":
-            images = []
-            for filepath in files:
-                array = np.load(filepath).astype("float32")
-                array = preprocess(array, hyperparams.num_bits_x)
-                images.append(array)
-            assert len(images) > 0
-            num_files = len(images)
-            images = np.asanyarray(images)
-            images = images.reshape((num_files * images.shape[1], ) +
-                                    images.shape[2:])
-        else:
-            raise NotImplementedError
-
-        dataset = glow.dataset.Dataset(images)
-        iterator = glow.dataset.Iterator(dataset, batch_size=1)
-
-        print(tabulate([["#image", len(dataset)]]))
-
-    # TODO: Init encoder and stored info
     encoder = Glow(hyperparams, hdf5_path=args.snapshot_path)
     if using_gpu:
         encoder.to_gpu()
 
     # Load picture
-    x = np.array(Image.open('bg/1.png')).astype('float32')
+    x = np.array(Image.open(args.img) ).astype('float32')
     x = preprocess(x, hyperparams.num_bits_x)
-    # img_x = make_uint8(x, num_bins_x)
-    # img_x = Image.fromarray(img_x)
-    # img_x.save('x.png')
 
     x = to_gpu(xp.expand_dims(x, axis=0))
     x += xp.random.uniform(0, 1.0/num_bins_x, size=x.shape)
 
+    # # Print this image info:
     # z, fw_ldt = encoder.forward_step(x)        
     # fw_ldt -= math.log(num_bins_x) * num_pixels
     
@@ -148,26 +115,38 @@ def main():
     # print(fw_ldt, logpZ, logpZ2)
 
     # Construct epsilon
-    class eps(chainer.ChainList):
+    class eps(chainer.Chain):
         def __init__(self, shape, glow_encoder):
             super().__init__()
             self.encoder = glow_encoder
 
             with self.init_scope():
-                self.b = chainer.Parameter(initializers.Normal(), shape)
+                self.b = chainer.Parameter(initializers.Zero(), shape)
+                self.m = chainer.Parameter(initializers.One(), (3, 8, 8))
         
         def forward(self, x):
-            b = cf.tanh(self.b)
+            b = cf.tanh(self.b) * 0.5
+
+            # Not sure if implementation is wrong
+            m = cf.softplus(self.m)
+            # m = cf.repeat(m, 8, axis=2)
+            # m = cf.repeat(m, 8, axis=1)
+            m = cf.repeat(m, 16, axis=2)
+            m = cf.repeat(m, 16, axis=1)
+
+            b = b * m 
             cur_x = cf.add(x, b)
+            cur_x = cf.clip(cur_x, -0.5,0.5)
 
-            z, logdet = self.encoder.forward_step(cur_x)
+            z = []
+            zs, logdet = self.encoder.forward_step(cur_x)
+            for (zi, mean, ln_var) in zs:
+                z.append(zi)
 
-            ez = []
-            for (zi, mean, ln_var) in z:
-                ez.append(zi.data.reshape(-1,))
-            ez = np.concatenate(ez)
+            z = merge_factorized_z(z)
 
-            return ez, z, logdet, cf.batch_l2_norm_squared(self.b), self.b * 1, cur_x
+            # return z, zs, logdet, cf.batch_l2_norm_squared(b), xp.tanh(self.b.data*1), cur_x, m
+            return z, zs, logdet, xp.sum(xp.abs(b.data)), xp.tanh(self.b.data*1), m, cur_x
 
         def save(self, path):
             filename = 'loss_model.hdf5'
@@ -183,7 +162,11 @@ def main():
     if using_gpu:
         epsilon.to_gpu()
 
-    optimizer = Optimizer(epsilon)
+    # optimizer = Optimizer(epsilon)
+    optimizer = optimizers.Adam(alpha=0.0005).setup(epsilon)
+    # optimizer = optimizers.SGD().setup(epsilon)
+    epsilon.b.update_rule.hyperparam.lr = 0.001
+    epsilon.m.update_rule.hyperparam.lr = 0.1
     print('init finish')
 
     training_step = 0
@@ -193,41 +176,47 @@ def main():
     loss_s = []
     logpZ_s = []
     logDet_s = []
+    m_s = []
     j = 0
 
     for iteration in range(args.total_iteration):
-        z, zs, fw_ldt, b_norm, b, cur_x = epsilon.forward(x)            
+        epsilon.cleargrads()
+        z, zs, fw_ldt, b_norm, b, m, cur_x = epsilon.forward(x)
+
         fw_ldt -= math.log(num_bins_x) * num_pixels
 
         logpZ1 = 0
+        factor_z = []
         for (zi, mean, ln_var) in zs:
+            factor_z.append(zi.data)
             logpZ1 += cf.gaussian_nll(zi, mean, ln_var)
             
         logpZ2 = cf.gaussian_nll(z, xp.zeros(z.shape), xp.zeros(z.shape)).data
         # logpZ2 = cf.gaussian_nll(z, np.mean(z), np.log(np.var(z))).data
 
-        logpZ = (10*logpZ2 + logpZ1)/11
-        # loss =  1000* b_norm + logpZ * 0.5 - fw_ldt
-        loss = b_norm + 0.01 * (logpZ - fw_ldt)
+        logpZ = (logpZ2 + logpZ1)/2
+        loss = 10 * b_norm + (logpZ - fw_ldt)
 
-        # print(b_norm, xp.linalg.norm(b.data))
-        epsilon.cleargrads()
         loss.backward()
-        optimizer.update(training_step)
+        optimizer.update()
         training_step += 1
 
         z_s.append(z.get())
-        b_s.append(cupy.asnumpy(b.data))
+        b_s.append(cupy.asnumpy(b))
+        m_s.append(cupy.asnumpy(m.data))
         loss_s.append(_float(loss))
         logpZ_s.append(_float(logpZ))
         logDet_s.append(_float(fw_ldt))
 
         printr(
-            "Iteration {}: loss: {:.6f} - logpZ: {:.6f} - log_det: {:.6f} - logpX: {:.6f}\n".
+            "Iteration {}: loss: {:.6f} - b_norm: {:.6f} - logpZ: {:.6f} - logpZ1: {:.6f} - logpZ2: {:.6f} - log_det: {:.6f} - logpX: {:.6f}\n".
             format(
                 iteration + 1,
                 _float(loss),
+                _float(b_norm),
                 _float(logpZ),
+                _float(logpZ1),
+                _float(logpZ2),
                 _float(fw_ldt),
                 _float(logpZ) - _float(fw_ldt)
             )
@@ -241,11 +230,18 @@ def main():
             np.save(args.ckpt + '/'+str(j)+'logDet.npy', logDet_s)
             cur_x = make_uint8(cur_x[0].data, num_bins_x)
             np.save(args.ckpt + '/'+str(j)+'image.npy', cur_x)
+            np.save(args.ckpt + '/'+str(j)+'m.npy', m_s)
+            
+            with encoder.reverse() as decoder:
+                rx, _ = decoder.reverse_step(factor_z)
+                rx_img = make_uint8(rx.data[0], num_bins_x)
+                np.save(args.ckpt + '/'+str(j)+'res.npy', rx_img)
             z_s = []
             b_s = []
             loss_s = []
             logpZ_s = []
             logDet_s = []
+            m_s = []
             j += 1
             epsilon.save(args.ckpt)
 
@@ -253,8 +249,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--snapshot-path", "-snapshot", type=str, default='/home/data1/meng/chainer/snapshot_128')
+        # "--snapshot-path", "-snapshot", type=str, default='/home/data1/meng/chainer/snapshot_64')
+        # "--snapshot-path", "-snapshot", type=str, default='snapshot')
     parser.add_argument("--gpu-device", "-gpu", type=int, default=1)
     parser.add_argument('--ckpt', type=str, required=True)
     parser.add_argument("--total-iteration", "-iter", type=int, default=1000)
+    parser.add_argument("-img", type=str, required=True)
     args = parser.parse_args()
     main()

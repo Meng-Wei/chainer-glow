@@ -121,7 +121,7 @@ def main():
             self.encoder = glow_encoder
 
             with self.init_scope():
-                self.b = chainer.Parameter(initializers.Zero(), shape)
+                self.b = chainer.Parameter(initializers.Zero(), (6, 32, 32))
                 self.m = chainer.Parameter(initializers.One(), (3, 8, 8))
         
         def forward(self, x):
@@ -131,15 +131,15 @@ def main():
             m = cf.softplus(self.m)
             # m = cf.repeat(m, 8, axis=2)
             # m = cf.repeat(m, 8, axis=1)
-            m = cf.repeat(m, 16, axis=2)
-            m = cf.repeat(m, 16, axis=1)
+            # m = cf.repeat(m, 16, axis=2)
+            # m = cf.repeat(m, 16, axis=1)
 
-            b = b * m 
-            cur_x = cf.add(x, b)
-            cur_x = cf.clip(cur_x, -0.5,0.5)
+            # b = b * m 
+            # cur_x = cf.add(x, b)
+            # cur_x = cf.clip(cur_x, -0.5,0.5)
 
             z = []
-            zs, logdet = self.encoder.forward_step(cur_x)
+            zs, logdet = self.encoder.forward_step(cur_x, b)
             for (zi, mean, ln_var) in zs:
                 z.append(zi)
 
