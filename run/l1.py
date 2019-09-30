@@ -139,7 +139,7 @@ def main():
             x_ = cf.clip(x_, -0.5, 0.5)
 
             z = []
-            zs, logdet = self.encoder.forward_step(cur_x)
+            zs, logdet = self.encoder.forward_step(x_)
             for (zi, mean, ln_var) in zs:
                 z.append(zi)
 
