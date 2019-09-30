@@ -135,8 +135,8 @@ def main():
             # m = cf.repeat(m, 16, axis=1)
 
             # b = b * m 
-            cur_x = cf.add(x, b_)
-            cur_x = cf.clip(cur_x, -0.5, 0.5)
+            x_ = cf.add(x, b_)
+            x_ = cf.clip(cur_x, -0.5, 0.5)
 
             z = []
             zs, logdet = self.encoder.forward_step(cur_x)
@@ -146,7 +146,7 @@ def main():
             z = merge_factorized_z(z)
 
             # return z, zs, logdet, cf.batch_l2_norm_squared(b), xp.tanh(self.b.data*1), cur_x, m
-            return z, zs, logdet, xp.sum(xp.abs(b_.data)), xp.tanh(self.b.data*1), self.m, cur_x
+            return z, zs, logdet, xp.sum(xp.abs(b_.data)), xp.tanh(self.b.data*1), self.m, x_
 
         def save(self, path):
             filename = 'loss_model.hdf5'
@@ -163,8 +163,8 @@ def main():
         epsilon.to_gpu()
 
     # optimizer = Optimizer(epsilon)
-    # optimizer = optimizers.Adam(alpha=0.0005).setup(epsilon)
-    optimizer = optimizers.SGD().setup(epsilon)
+    optimizer = optimizers.Adam(alpha=0.0005).setup(epsilon)
+    # optimizer = optimizers.SGD().setup(epsilon)
     epsilon.b.update_rule.hyperparam.lr = 0.0001
     epsilon.m.update_rule.hyperparam.lr = 0.1
     print('init finish')
@@ -232,10 +232,10 @@ def main():
             np.save(args.ckpt + '/'+str(j)+'image.npy', cur_x)
             np.save(args.ckpt + '/'+str(j)+'m.npy', m_s)
             
-            with encoder.reverse() as decoder:
-                rx, _ = decoder.reverse_step(factor_z)
-                rx_img = make_uint8(rx.data[0], num_bins_x)
-                np.save(args.ckpt + '/'+str(j)+'res.npy', rx_img)
+            # with encoder.reverse() as decoder:
+            #     rx, _ = decoder.reverse_step(factor_z)
+            #     rx_img = make_uint8(rx.data[0], num_bins_x)
+            #     np.save(args.ckpt + '/'+str(j)+'res.npy', rx_img)
             z_s = []
             b_s = []
             loss_s = []
