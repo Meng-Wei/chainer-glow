@@ -27,9 +27,6 @@ from hyperparams import Hyperparameters
 # from optimizer import Optimizer
 from chainer import optimizers
 
-import cv2
-
-
 def make_uint8(array, bins):
     if array.ndim == 4:
         array = array[0]
@@ -41,7 +38,6 @@ def make_uint8(array, bins):
         np.clip(
             np.floor((to_cpu(array.transpose(1, 2, 0)) + 0.5) * bins) *
             (255 / bins), 0, 255))
-
 
 def preprocess(image, num_bits_x):
     num_bins_x = 2**num_bits_x
@@ -56,7 +52,6 @@ def preprocess(image, num_bits_x):
         raise NotImplementedError
     return image
 
-
 def merge_factorized_z(factorized_z, factor=2):
     z = None
     for zi in reversed(factorized_z):
@@ -65,11 +60,9 @@ def merge_factorized_z(factorized_z, factor=2):
         z = glow.nn.functions.unsqueeze(z, factor, xp)
     return z
 
-
 def printr(string):
     sys.stdout.write(string)
     sys.stdout.write("\r")
-
 
 def _float(v):
     if isinstance(v, float):
@@ -77,7 +70,6 @@ def _float(v):
     if isinstance(v, chainer.Variable):
         return float(v.data)
     return float(v)
-
 
 def main():
     try:
@@ -102,7 +94,7 @@ def main():
         encoder.to_gpu()
 
     # Load picture
-    x = np.array(Image.open("./bg/16.png")).astype('float32')
+    x = np.array(Image.open(args.img) ).astype('float32')
     x = preprocess(x, hyperparams.num_bits_x)
 
     x = to_gpu(xp.expand_dims(x, axis=0))
@@ -119,7 +111,6 @@ def main():
                 self.m = chainer.Parameter(initializers.One(), shape)
 
         def modify_mask(self):
-
             mask = self.m.data
             for i_idx in range(8):
                 for j_idx in range(8):
